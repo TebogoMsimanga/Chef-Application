@@ -1,4 +1,5 @@
 import CartButton from "@/components/CartButton";
+import SearchBar from "@/components/SearchBar";
 import { images, menu } from "@/constants";
 import React from "react";
 import {
@@ -57,33 +58,28 @@ export default function Index() {
         }}
         contentContainerStyle={styles.homeSpacing}
         ListHeaderComponent={() => (
-          <View style={styles.userInfo}>
-            <View style={styles.userInfoRow}>
+          <View>
+            <View style={styles.userInfo}>
               <Image
                 source={images.logo}
                 style={styles.logo}
                 resizeMode="contain"
-                tintColor={"#EBECFF"}
+                tintColor="#EBECFF"
               />
-              <TouchableOpacity
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginTop: 2,
-                  marginRight: 12,
-                }}
-              >
-                <Text>Christoffel</Text>
-                <Image
-                  source={images.arrowDown}
-                  style={{ width: 12, height: 12 }}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-              <Text>Head Chef</Text>
+              <View style={styles.userInfoTextContainer}>
+                <TouchableOpacity style={styles.userNameRow}>
+                  <Text style={styles.userName}>Christoffel</Text>
+                  <Image
+                    source={images.arrowDown}
+                    style={styles.arrowDownIcon}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <Text style={styles.userRole}>Head Chef</Text>
+              </View>
+              <CartButton />
             </View>
-            <CartButton />
+            <SearchBar />
           </View>
         )}
       />
@@ -96,19 +92,34 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     flexDirection: "row",
-    width: "100%",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-  },
-  userInfoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8, 
   },
   logo: {
     width: 60,
     height: 60,
-    marginRight: 8,
+  },
+  userInfoTextContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+  },
+  userNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  userName: {
+    fontSize: 16,
+    color: "#000",
+  },
+  userRole: {
+    fontSize: 14,
+    color: "#666",
+  },
+  arrowDownIcon: {
+    width: 12,
+    height: 12,
   },
   homeCards: {
     height: 192,
