@@ -64,30 +64,30 @@ export const CATEGORIES = [
     },
 ];
 
-export const offers = [
+export const menu = [
     {
         id: 1,
-        title: "SUMMER COMBO",
+        title: "MEALS",
         image: burgerOne,
-        color: "#D33B0D",
+        color: "#0016FF",
     },
     {
         id: 2,
-        title: "BURGER BASH",
+        title: "BREAKFAST",
         image: burgerTwo,
-        color: "#DF5A0C",
+        color: "#4757FF",
     },
     {
         id: 3,
-        title: "PIZZA PARTY",
+        title: "LUNCH",
         image: pizzaOne,
-        color: "#084137",
+        color: "#000C8F",
     },
     {
         id: 4,
-        title: "BURRITO DELIGHT",
+        title: "DINNER",
         image: buritto,
-        color: "#EB920C",
+        color: "#000FB8",
     },
 ];
 
