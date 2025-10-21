@@ -7,26 +7,42 @@ import {
   ID,
   Query,
 } from "react-native-appwrite";
+import * as Sentry from "@sentry/react-native";
 
 export const appwriteConfig = {
-  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
+  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
   platform: "com.tbg.mennu",
-  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
+  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
   databaseId: "68f73b6f002be00f3eaa",
   userTable: "user",
 };
 
-// creating a new appwrite client
 export const client = new Client();
 
 client
-  .setEndpoint(appwriteConfig.endpoint!)
-  .setProject(appwriteConfig.projectId!)
+  .setEndpoint(appwriteConfig.endpoint)
+  .setProject(appwriteConfig.projectId)
   .setPlatform(appwriteConfig.platform);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
-export const avatars = new Avatars(client);
+const avatars = new Avatars(client);
+
+export const logout = async () => {
+  try {
+    await account.deleteSession("current");
+  } catch (error) {
+    console.log("Logout error (may already be logged out):", error);
+  }
+};
+
+export const signIn = async ({ email, password }: SignInParams) => {
+  try {
+    const session = await account.createEmailPasswordSession(email, password);
+  } catch (e) {
+    throw new Error(e as string);
+  }
+};
 
 export const createUser = async ({
   name,
@@ -35,8 +51,7 @@ export const createUser = async ({
 }: CreateUserPrams) => {
   try {
     const newAccount = await account.create(ID.unique(), email, password, name);
-
-    if (!newAccount) throw Error;
+    if (!newAccount) throw new Error("Failed to create account");
 
     await signIn({ email, password });
 
@@ -46,43 +61,30 @@ export const createUser = async ({
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
       ID.unique(),
-      {
-        account: newAccount.$id,
-        email,
-        name,
-        avatar: avatarUrl,
-      }
+      { email, name, account: newAccount.$id, avatar: avatarUrl }
     );
-  } catch (error) {
-    throw new Error(error as string);
-  }
-};
-
-export const signIn = async ({ email, password }: SignInParams) => {
-  try {
-    const session = await account.createEmailPasswordSession(email, password);
-  } catch (error) {
-    throw new Error(error as string);
+  } catch (error: any) {
+    Sentry.captureEvent(error);
+    throw new Error(error.message || "Failed to create user");
   }
 };
 
 export const getCurrentUser = async () => {
   try {
     const currentAccount = await account.get();
-
     if (!currentAccount) throw Error;
 
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
-      [Query.equal("accountId", currentAccount.$id)]
+      [Query.equal("account", currentAccount.$id)]
     );
 
     if (!currentUser) throw Error;
 
     return currentUser.documents[0];
-  } catch (error) {
-    console.log(error);
-    throw new Error(error as string);
+  } catch (e) {
+    console.log(e);
+    throw new Error(e as string);
   }
 };

@@ -1,8 +1,9 @@
-import CartButton from "@/components/CartButton";
+import AddButton from "@/components/AddButton";
 import SearchBar from "@/components/SearchBar";
 import { images, menu } from "@/constants";
 import React from "react";
 import {
+  Button,
   FlatList,
   Image,
   Pressable,
@@ -12,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "@sentry/react-native"
 
 export default function Index() {
   return (
@@ -77,9 +79,9 @@ export default function Index() {
                 </TouchableOpacity>
                 <Text style={styles.userRole}>Head Chef</Text>
               </View>
-              <CartButton />
+              <AddButton />
             </View>
-            <SearchBar />
+            {/* <SearchBar /> */}
           </View>
         )}
       />

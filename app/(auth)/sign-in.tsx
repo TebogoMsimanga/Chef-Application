@@ -1,9 +1,10 @@
-import { View, Text, Button, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import React, { useState } from "react";
 import { Link, router } from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
 import { signIn } from "@/lib/appwrite";
+import * as Sentry from "@sentry/react-native";
 
 const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -11,19 +12,20 @@ const SignIn = () => {
 
   const submit = async () => {
     if (!form.email || !form.password)
-      return Alert.alert("Error", "Please enter a valid email and password");
+      return Alert.alert(
+        "Error",
+        "Please enter valid email address & password."
+      );
 
     setIsSubmitting(true);
 
     try {
-      await signIn({
-        email: form.email,
-        password: form.password
-      });
+      await signIn({ email: form.email, password: form.password });
 
       router.replace("/");
     } catch (error: any) {
       Alert.alert("Error", error.message);
+      Sentry.captureEvent(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -31,7 +33,6 @@ const SignIn = () => {
 
   return (
     <View style={styles.container}>
-      {/* Email */}
       <CustomInput
         placeholder="Enter your email"
         value={form.email}
@@ -39,8 +40,6 @@ const SignIn = () => {
         label="Email"
         keyboardType="email-address"
       />
-
-      {/* password */}
       <CustomInput
         placeholder="Enter your password"
         value={form.password}
@@ -60,20 +59,12 @@ const SignIn = () => {
           gap: 4,
         }}
       >
-        <Text
-          style={{
-            fontSize: 14,
-            color: "#7e7b7bff",
-          }}
-        >
+        <Text style={{ fontSize: 14, color: "#7e7b7bff" }}>
           Don&apos;t have an account?
         </Text>
         <Link
-          href={"/sign-up"}
-          style={{
-            fontWeight: "bold",
-            color: "#1807acff",
-          }}
+          href="/sign-up"
+          style={{ fontWeight: "bold", color: "#1807acff" }}
         >
           Sign Up
         </Link>
@@ -81,6 +72,7 @@ const SignIn = () => {
     </View>
   );
 };
+
 export default SignIn;
 
 const styles = StyleSheet.create({

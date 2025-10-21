@@ -1,7 +1,7 @@
 import {View, Text} from 'react-native'
 import React from 'react'
 
-export default function MenuEdit() {
+export default function Cart() {
     return (
         <View>
             <Text>MenuItem</Text>
