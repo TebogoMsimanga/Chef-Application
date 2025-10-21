@@ -18,6 +18,7 @@ export interface Category extends Models.Document {
 }
 
 export interface User extends Models.Document {
+    account: string;
     name: string;
     email: string;
     avatar: string;
