@@ -16,17 +16,49 @@ export const appwriteConfig = {
   userTable: "user",
 };
 
-// creating a new appwrite client
 export const client = new Client();
 
-client
-  .setEndpoint(appwriteConfig.endpoint!)
-  .setProject(appwriteConfig.projectId!)
-  .setPlatform(appwriteConfig.platform);
+if (appwriteConfig.endpoint && appwriteConfig.projectId) {
+  client
+    .setEndpoint(appwriteConfig.endpoint)
+    .setProject(appwriteConfig.projectId)
+    .setPlatform(appwriteConfig.platform);
+} else {
+  throw new Error("Appwrite config (endpoint or projectId) is missing!");
+}
 
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const avatars = new Avatars(client);
+
+export const logout = async () => {
+  try {
+    await account.deleteSession("current");
+  } catch (error) {
+    console.log("Logout error (may already be logged out):", error);
+  }
+};
+
+export const signIn = async ({ email, password }: SignInParams) => {
+  try {
+    // Check if already logged in
+    try {
+      const current = await account.get();
+      console.log("Already logged in - reusing session for:", current.email);
+      return current; 
+    } catch {
+      // No active session - create new one
+    }
+
+    const session = await account.createEmailPasswordSession(email, password);
+    // Get user data after creating session
+    const user = await account.get(); 
+    return user;
+  } catch (error: any) {
+    console.error("Sign-in error:", error);
+    throw new Error(error.message || "Failed to sign in");
+  }
+};
 
 export const createUser = async ({
   name,
@@ -35,12 +67,9 @@ export const createUser = async ({
 }: CreateUserPrams) => {
   try {
     const newAccount = await account.create(ID.unique(), email, password, name);
+    if (!newAccount) throw new Error("Failed to create account");
 
-    if (!newAccount) throw Error;
-
-    await signIn({ email, password });
-
-    const avatarUrl = avatars.getInitialsURL(name);
+    const avatarUrl = avatars.getInitials(name);
 
     return await databases.createDocument(
       appwriteConfig.databaseId,
@@ -53,36 +82,28 @@ export const createUser = async ({
         avatar: avatarUrl,
       }
     );
-  } catch (error) {
-    throw new Error(error as string);
-  }
-};
-
-export const signIn = async ({ email, password }: SignInParams) => {
-  try {
-    const session = await account.createEmailPasswordSession(email, password);
-  } catch (error) {
-    throw new Error(error as string);
+  } catch (error: any) {
+    console.error("Create user error:", error);
+    throw new Error(error.message || "Failed to create user");
   }
 };
 
 export const getCurrentUser = async () => {
   try {
     const currentAccount = await account.get();
-
-    if (!currentAccount) throw Error;
-
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
-      [Query.equal("accountId", currentAccount.$id)]
+      [Query.equal("account", currentAccount.$id)]
     );
 
-    if (!currentUser) throw Error;
+    if (!currentUser.documents.length) {
+      throw new Error("No user document found");
+    }
 
     return currentUser.documents[0];
-  } catch (error) {
-    console.log(error);
-    throw new Error(error as string);
+  } catch (error: any) {
+    console.error("Get current user error:", error);
+    throw new Error(error.message || "Failed to get current user");
   }
 };

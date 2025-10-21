@@ -22,7 +22,7 @@ const SignUp = () => {
         name: form.name
       })
 
-      router.replace("/sign-in");
+      router.replace("/");
     } catch (error: any) {
       Alert.alert("Error", error.message);
     } finally {

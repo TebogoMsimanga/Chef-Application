@@ -3,6 +3,7 @@ import SearchBar from "@/components/SearchBar";
 import { images, menu } from "@/constants";
 import React from "react";
 import {
+  Button,
   FlatList,
   Image,
   Pressable,
@@ -12,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "@sentry/react-native"
 
 export default function Index() {
   return (
@@ -81,6 +83,9 @@ export default function Index() {
             </View>
             <SearchBar />
           </View>
+        )}
+        ListFooterComponent={() => (
+          <Button title='Try!' onPress={ () => { Sentry.captureException(new Error('First error')) }}/>
         )}
       />
     </SafeAreaView>
