@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     height: 12,
   },
   homeCards: {
-    height: 192,
+    height: 190,
     marginTop: 8,
     marginBottom: 8,
     borderRadius: 6,
@@ -168,7 +168,6 @@ const styles = StyleSheet.create({
     lineHeight: 40,
   },
   homeSpacing: {
-    paddingBottom: 28,
     paddingRight: 10,
     paddingLeft: 10,
   },

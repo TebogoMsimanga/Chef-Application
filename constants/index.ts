@@ -41,26 +41,30 @@ import salad from "@/assets/images/salad.png";
 import success from "@/assets/images/success.png";
 import tomatoes from "@/assets/images/tomatoes.png";
 
-export const CATEGORIES = [
+export const filter = [
     {
         id: "1",
         name: "All",
     },
     {
         id: "2",
-        name: "Burger",
+        name: "Breakfast",
     },
     {
         id: "3",
-        name: "Pizza",
+        name: "Starters",
     },
     {
         id: "4",
-        name: "Wrap",
+        name: "Lunch",
     },
     {
         id: "5",
-        name: "Burrito",
+        name: "Supper",
+    },
+    {
+        id: "6",
+        name: "Meals",
     },
 ];
 
