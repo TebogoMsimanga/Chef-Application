@@ -14,8 +14,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Sentry from "@sentry/react-native"
+import useAuthStore from "@/store/auth.store";
 
 export default function Index() {
+  const { user } = useAuthStore();
+
+  console.log("AuthStore", JSON.stringify(user, null, 2))
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <FlatList
