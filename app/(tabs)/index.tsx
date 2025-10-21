@@ -1,4 +1,4 @@
-import CartButton from "@/components/CartButton";
+import AddButton from "@/components/AddButton";
 import SearchBar from "@/components/SearchBar";
 import { images, menu } from "@/constants";
 import React from "react";
@@ -79,13 +79,10 @@ export default function Index() {
                 </TouchableOpacity>
                 <Text style={styles.userRole}>Head Chef</Text>
               </View>
-              <CartButton />
+              <AddButton />
             </View>
-            <SearchBar />
+            {/* <SearchBar /> */}
           </View>
-        )}
-        ListFooterComponent={() => (
-          <Button title='Try!' onPress={ () => { Sentry.captureException(new Error('First error')) }}/>
         )}
       />
     </SafeAreaView>
