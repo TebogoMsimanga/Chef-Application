@@ -14,7 +14,12 @@ export const appwriteConfig = {
   platform: "com.tbg.mennu",
   projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
   databaseId: "68f73b6f002be00f3eaa",
+  bucketId: "68f80104002b5e2aae2b",
   userTable: "user",
+  categoryTable: "category",
+  menuTable: "menu",
+  customizationTable: "customization",
+  menuCustomizationTable: "menu_customizations"
 };
 
 export const client = new Client();
