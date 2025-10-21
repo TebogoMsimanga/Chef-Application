@@ -6,7 +6,7 @@ export default function SearchBar() {
    <TextInput
       placeholder="Search menu..."
       style={styles.searchInput}
-      editable={false} // Disable input for now since no functionality is required
+      editable={false} 
     />
   )
 }
