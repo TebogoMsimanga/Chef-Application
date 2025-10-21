@@ -6,6 +6,7 @@ import {
   Databases,
   ID,
   Query,
+  Storage
 } from "react-native-appwrite";
 import * as Sentry from "@sentry/react-native";
 
@@ -31,6 +32,7 @@ client
 
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const storage = new Storage(client);
 const avatars = new Avatars(client);
 
 export const logout = async () => {
