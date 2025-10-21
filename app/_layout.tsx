@@ -46,8 +46,5 @@ export default Sentry.wrap(function RootLayout() {
 
   if (!fontsLoaded || isLoading ) return null;
 
-  if (!fetchAuthenticatedUser) return <Redirect href="/sign-in" />;
-  
-
   return <Stack screenOptions={{ headerShown: false}}/>;
 });

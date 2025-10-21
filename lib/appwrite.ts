@@ -61,7 +61,7 @@ export const createUser = async ({
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
       ID.unique(),
-      { email, name, account: newAccount.$id, avatar: avatarUrl }
+      { email, name, accountId: newAccount.$id, avatar: avatarUrl }
     );
   } catch (error: any) {
     Sentry.captureEvent(error);
@@ -77,7 +77,7 @@ export const getCurrentUser = async () => {
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
-      [Query.equal("account", currentAccount.$id)]
+      [Query.equal("accountId", currentAccount.$id)]
     );
 
     if (!currentUser) throw Error;
