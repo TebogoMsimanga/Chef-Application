@@ -18,6 +18,8 @@ const dummyData = {
     { name: "Tomatoes", price: 10, type: "topping" },
     { name: "Bacon", price: 30, type: "topping" },
     { name: "Avocado", price: 35, type: "topping" },
+    { name: "Green Peppers", price: 15, type: "topping" },
+    { name: "Pineapple", price: 20, type: "topping" },
 
     // Sides
     { name: "Coke", price: 30, type: "side" },
@@ -30,6 +32,51 @@ const dummyData = {
     { name: "Mozzarella Sticks", price: 45, type: "side" },
     { name: "Sweet Corn", price: 25, type: "side" },
     { name: "Choco Lava Cake", price: 42, type: "side" },
+
+    // Spicy
+    { name: "Spicy Mayo", price: 15, type: "spicy" },
+    { name: "Hot Wings", price: 55, type: "spicy" },
+
+    // Mild
+    { name: "Mild BBQ Sauce", price: 12, type: "mild" },
+    { name: "Creamy Ranch Dip", price: 15, type: "mild" },
+
+    // Hot
+    { name: "Habanero Sauce", price: 18, type: "hot" },
+    { name: "Peri Peri Chicken", price: 60, type: "hot" },
+
+    // Size
+    { name: "Small", price: 10, type: "size" },
+    { name: "Medium", price: 20, type: "size" },
+    { name: "Large", price: 40, type: "size" },
+
+    // Hallal
+    { name: "Hallal Chicken", price: 55, type: "hallal" },
+    { name: "Hallal Pepperoni", price: 50, type: "hallal" },
+
+    // Vegetarian
+    { name: "Grilled Veggies", price: 30, type: "vegeterian" },
+    { name: "Paneer Cubes", price: 35, type: "vegeterian" },
+
+    // Sweet
+    { name: "Brownie", price: 40, type: "sweet" },
+    { name: "Ice Cream Scoop", price: 25, type: "sweet" },
+
+    // Bread
+    { name: "Herb & Cheese Bread", price: 35, type: "bread" },
+    { name: "Stuffed Crust", price: 45, type: "bread" },
+
+    // Water
+    { name: "Bottled Water", price: 20, type: "water" },
+    { name: "Sparkling Water", price: 28, type: "water" },
+
+    // Juice
+    { name: "Orange Juice", price: 30, type: "juice" },
+    { name: "Apple Juice", price: 32, type: "juice" },
+
+    // Sauce
+    { name: "Garlic Dip", price: 10, type: "sauce" },
+    { name: "Tomato Ketchup", price: 5, type: "sauce" },
   ],
 
   menu: [

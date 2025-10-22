@@ -1,4 +1,4 @@
-import { Stack, SplashScreen, Redirect } from "expo-router";
+import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from 'expo-font';
 import {useEffect} from 'react';
 import * as Sentry from '@sentry/react-native';
