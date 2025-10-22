@@ -72,13 +72,17 @@ async function clearStorage(): Promise<void> {
 
 async function uploadImageToStorage(imageUrl: string) {
   try {
-    // Use a placeholder image if there's an issue with the original
     if (!imageUrl || imageUrl.length === 0) {
-      return "https://picsum.photos/400";
+      throw new Error("No image URL provided");
     }
 
-    console.log(`Fetching image from: ${imageUrl}`);
-    const response = await fetch(imageUrl, {
+    // Add size parameters to the URL to get a smaller version from the CDN
+    const urlWithSize = imageUrl.includes("?")
+      ? `${imageUrl}&w=800&q=85`
+      : `${imageUrl}?w=800&q=85`;
+
+    console.log(`Fetching image from: ${urlWithSize}`);
+    const response = await fetch(urlWithSize, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -86,42 +90,34 @@ async function uploadImageToStorage(imageUrl: string) {
     });
 
     if (!response.ok) {
-      console.warn(
+      throw new Error(
         `Failed to fetch image: ${response.status} ${response.statusText}`
       );
-      return "https://picsum.photos/400";
     }
 
     const blob = await response.blob();
-    console.log(`Successfully got blob of size: ${blob.size} bytes`);
-
-    // If image is too large (> 2MB), use placeholder
-    if (blob.size > 2 * 1024 * 1024) {
-      console.warn("Image too large (>2MB), using placeholder");
-      return "https://picsum.photos/400";
-    }
+    console.log(`Image size: ${blob.size} bytes`);
 
     const filename = `menu-item-${Date.now()}.jpg`;
-    const fileObj = {
-      name: filename,
-      type: "image/jpeg",
-      size: blob.size,
-      uri: imageUrl,
-    };
 
-    console.log(`Creating file in storage: ${filename}`);
+    console.log(`Uploading image: ${filename}`);
     const file = await storage.createFile(
       appwriteConfig.bucketId,
       ID.unique(),
-      fileObj
+      {
+        name: filename,
+        type: "image/jpeg",
+        size: blob.size,
+        uri: urlWithSize,
+      }
     );
 
     const viewUrl = storage.getFileViewURL(appwriteConfig.bucketId, file.$id);
     console.log(`File uploaded successfully. View URL: ${viewUrl}`);
     return viewUrl;
   } catch (error: any) {
-    console.warn("Error uploading image:", error);
-    return "https://picsum.photos/400"; // Return placeholder instead of throwing
+    console.error("Error uploading image:", error);
+    throw new Error(`Failed to upload image: ${error.message}`);
   }
 }
 
