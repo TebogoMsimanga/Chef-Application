@@ -1,7 +1,7 @@
-import { User } from "@/type";
-import { create } from "zustand";
-import * as Sentry from "@sentry/react-native";
 import { getCurrentUser } from "@/lib/appwrite";
+import { User } from "@/type";
+import * as Sentry from "@sentry/react-native";
+import { create } from "zustand";
 
 type AuthState = {
   isAuthenticated: boolean;
@@ -30,18 +30,26 @@ const useAuthStore = create<AuthState>((set) => ({
     try {
       const user = await getCurrentUser();
 
-      if (user)
+      if (user) {
         set({
           isAuthenticated: true,
           user: user as unknown as User,
           isLoading: false,
         });
-      else set({ isAuthenticated: false, user: null, isLoading: false });
+      } else {
+        set({
+          isAuthenticated: false,
+          user: null,
+          isLoading: false,
+        });
+      }
     } catch (error: any) {
       Sentry.captureEvent(error);
-      set({ isAuthenticated: false, user: null, isLoading: false });
-    } finally {
-      set({ isLoading: false });
+      set({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+      });
     }
   },
 }));
