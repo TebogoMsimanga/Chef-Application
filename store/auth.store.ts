@@ -30,11 +30,16 @@ const useAuthStore = create<AuthState>((set) => ({
     try {
       const user = await getCurrentUser();
 
-      if (user) set({ isAuthenticated: true, user: user as unknown as User });
-      else set({ isAuthenticated: false, user: null });
+      if (user)
+        set({
+          isAuthenticated: true,
+          user: user as unknown as User,
+          isLoading: false,
+        });
+      else set({ isAuthenticated: false, user: null, isLoading: false });
     } catch (error: any) {
       Sentry.captureEvent(error);
-      set({ isAuthenticated: false, user: null });
+      set({ isAuthenticated: false, user: null, isLoading: false });
     } finally {
       set({ isLoading: false });
     }

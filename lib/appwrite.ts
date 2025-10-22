@@ -6,7 +6,7 @@ import {
   Databases,
   ID,
   Query,
-  Storage
+  Storage,
 } from "react-native-appwrite";
 import * as Sentry from "@sentry/react-native";
 
@@ -20,7 +20,7 @@ export const appwriteConfig = {
   categoryTable: "category",
   menuTable: "menu",
   customizationTable: "customization",
-  menuCustomizationTable: "menu_customizations"
+  menuCustomizationTable: "menu_customizations",
 };
 
 export const client = new Client();
@@ -35,30 +35,14 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 const avatars = new Avatars(client);
 
-export const logout = async () => {
-  try {
-    await account.deleteSession("current");
-  } catch (error) {
-    console.log("Logout error (may already be logged out):", error);
-  }
-};
-
-export const signIn = async ({ email, password }: SignInParams) => {
-  try {
-    const session = await account.createEmailPasswordSession(email, password);
-  } catch (e) {
-    throw new Error(e as string);
-  }
-};
-
 export const createUser = async ({
-  name,
   email,
   password,
+  name,
 }: CreateUserPrams) => {
   try {
     const newAccount = await account.create(ID.unique(), email, password, name);
-    if (!newAccount) throw new Error("Failed to create account");
+    if (!newAccount) throw Error;
 
     await signIn({ email, password });
 
@@ -68,11 +52,21 @@ export const createUser = async ({
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
       ID.unique(),
-      { email, name, accountId: newAccount.$id, avatar: avatarUrl }
+      { email, name, $id: newAccount.$id, avatar: avatarUrl }
     );
-  } catch (error: any) {
-    Sentry.captureEvent(error);
-    throw new Error(error.message || "Failed to create user");
+  } catch (e) {
+    Sentry.captureEvent(e as any);
+    throw new Error(e as string);
+  }
+};
+
+export const signIn = async ({ email, password }: SignInParams) => {
+  try {
+    const session = await account.createEmailPasswordSession(email, password);
+    return session;
+  } catch (e) {
+    Sentry.captureEvent(e as any);
+    throw new Error(e as string);
   }
 };
 
@@ -84,7 +78,7 @@ export const getCurrentUser = async () => {
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userTable,
-      [Query.equal("accountId", currentAccount.$id)]
+      [Query.equal("$id", currentAccount.$id)]
     );
 
     if (!currentUser) throw Error;
@@ -92,6 +86,7 @@ export const getCurrentUser = async () => {
     return currentUser.documents[0];
   } catch (e) {
     console.log(e);
+    Sentry.captureEvent(e as any);
     throw new Error(e as string);
   }
 };

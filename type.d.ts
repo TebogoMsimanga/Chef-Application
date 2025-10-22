@@ -12,6 +12,12 @@ export interface MenuItem extends Models.Document {
     type: string;
 }
 
+export interface Customization extends Models.Document {
+    name: string;
+    price: number;
+    type: string;
+}
+
 export interface Category extends Models.Document {
     name: string;
     description: string;

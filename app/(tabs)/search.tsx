@@ -12,7 +12,8 @@ const Search = () => {
         onPress={() =>
           seed().catch((error) => console.log("Failed to seed DB", error))
         }
-      ></Button>
+      />
+        
     </SafeAreaView>
   );
 };

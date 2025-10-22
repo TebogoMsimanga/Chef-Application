@@ -10,7 +10,7 @@ interface Category {
 interface Customization {
     name: string;
     price: number;
-    type: "topping" | "side" | "size" | "crust" | string; // extend as needed
+    type: "topping" | "spicy" | "mild" | "hot" | "size" | "hallal" | "vegeterian" | "sweet" | "bread" | "water" | "juice" | "sauce" | "side"; // extend as needed
 }
 
 interface MenuItem {
