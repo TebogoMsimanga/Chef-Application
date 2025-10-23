@@ -1,4 +1,5 @@
 import { CreateUserPrams, GetMenuParams, SignInParams } from "@/type";
+import * as Sentry from "@sentry/react-native";
 import {
   Account,
   Avatars,
@@ -8,7 +9,6 @@ import {
   Query,
   Storage,
 } from "react-native-appwrite";
-import * as Sentry from "@sentry/react-native";
 
 export const appwriteConfig = {
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
@@ -91,22 +91,44 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const getMenu = async ({ category, query}: GetMenuParams) => {
+export const getMenu = async ({ category, query }: GetMenuParams) => {
   try {
-    const queries: string[] = [];
+    const queries: string[] = [Query.orderDesc("$createdAt"), Query.limit(20)];
 
-    if(category) queries.push(Query.equal("categories", category));
-    if(query) queries.push(Query.search("name", query));
+    if (category) queries.push(Query.equal("categories", category));
+    if (query) queries.push(Query.search("name", query));
 
     const menus = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.menuTable,
-      queries,
-    )
+      queries
+    );
 
-    return menus.documents;
+    // Process and validate menu items
+    const processedMenus = menus.documents.map((menu) => ({
+      name: menu.name,
+      price: menu.price,
+      image_id: menu.image_id,
+      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menu.image_id}/view?project=${appwriteConfig.projectId}`,
+      description: menu.description,
+      calories: menu.calories,
+      protein: menu.protein,
+      rating: menu.rating,
+      type: menu.type || "default",
+      // Include Appwrite's system fields
+      $id: menu.$id,
+      $createdAt: menu.$createdAt,
+      $updatedAt: menu.$updatedAt,
+      $permissions: menu.$permissions,
+      $collectionId: menu.$collectionId,
+      $databaseId: menu.$databaseId,
+      $sequence: menu.$sequence,
+    }));
+
+    return processedMenus;
   } catch (error) {
-    throw new Error(error as string)
+    console.error("Error fetching menu:", error);
+    throw new Error(error as string);
   }
 };
 
@@ -114,9 +136,12 @@ export const getCategories = async () => {
   try {
     const categories = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.categoryTable
+      appwriteConfig.categoryTable,
+      [Query.orderAsc("name")]
     );
+    return categories.documents;
   } catch (error) {
+    console.error("Error fetching categories:", error);
     throw new Error(error as string);
   }
-}
+};

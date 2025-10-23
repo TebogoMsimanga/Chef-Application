@@ -83,8 +83,7 @@ const dummyData = {
     {
       name: "Classic Cheeseburger",
       description: "Beef patty, cheese, lettuce, tomato",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/044/844/600/large_2x/homemade-fresh-tasty-burger-with-meat-and-cheese-classic-cheese-burger-and-vegetable-ai-generated-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 25.99,
       rating: 4.5,
       calories: 550,
@@ -95,8 +94,7 @@ const dummyData = {
     {
       name: "Pepperoni Pizza",
       description: "Loaded with cheese and pepperoni slices",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/023/742/417/large_2x/pepperoni-pizza-isolated-illustration-ai-generative-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 30.99,
       rating: 4.7,
       calories: 700,
@@ -113,8 +111,7 @@ const dummyData = {
     {
       name: "Bean Burrito",
       description: "Stuffed with beans, rice, salsa",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/055/133/581/large_2x/deliciously-grilled-burritos-filled-with-beans-corn-and-fresh-vegetables-served-with-lime-wedge-and-cilantro-isolated-on-transparent-background-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 20.99,
       rating: 4.2,
       calories: 480,
@@ -125,8 +122,7 @@ const dummyData = {
     {
       name: "BBQ Bacon Burger",
       description: "Smoky BBQ sauce, crispy bacon, cheddar",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/060/236/245/large_2x/a-large-hamburger-with-cheese-onions-and-lettuce-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 27.5,
       rating: 4.8,
       calories: 650,
@@ -137,8 +133,7 @@ const dummyData = {
     {
       name: "Chicken Caesar Wrap",
       description: "Grilled chicken, lettuce, Caesar dressing",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/048/930/603/large_2x/caesar-wrap-grilled-chicken-isolated-on-transparent-background-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 21.5,
       rating: 4.4,
       calories: 490,
@@ -149,8 +144,7 @@ const dummyData = {
     {
       name: "Grilled Veggie Sandwich",
       description: "Roasted veggies, pesto, cheese",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/047/832/012/large_2x/grilled-sesame-seed-bread-veggie-sandwich-with-tomato-and-onion-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 19.99,
       rating: 4.1,
       calories: 420,
@@ -161,8 +155,7 @@ const dummyData = {
     {
       name: "Double Patty Burger",
       description: "Two juicy beef patties and cheese",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/060/359/627/large_2x/double-cheeseburger-with-lettuce-tomatoes-cheese-and-sesame-bun-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 32.99,
       rating: 4.9,
       calories: 720,
@@ -179,8 +172,7 @@ const dummyData = {
     {
       name: "Paneer Tikka Wrap",
       description: "Spicy paneer, mint chutney, veggies",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/057/913/530/large_2x/delicious-wraps-a-tantalizing-array-of-wraps-filled-with-vibrant-vegetables-succulent-fillings-and-fresh-ingredients-artfully-arranged-for-a-mouthwatering-culinary-experience-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 23.99,
       rating: 4.6,
       calories: 470,
@@ -191,8 +183,7 @@ const dummyData = {
     {
       name: "Mexican Burrito Bowl",
       description: "Rice, beans, corn, guac, salsa",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/057/466/374/large_2x/healthy-quinoa-bowl-with-avocado-tomato-and-black-beans-ingredients-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 26.49,
       rating: 4.7,
       calories: 610,
@@ -203,8 +194,7 @@ const dummyData = {
     {
       name: "Spicy Chicken Sandwich",
       description: "Crispy chicken, spicy sauce, pickles",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/051/814/008/large_2x/a-grilled-chicken-sandwich-with-lettuce-and-tomatoes-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 24.99,
       rating: 4.3,
       calories: 540,
@@ -221,8 +211,7 @@ const dummyData = {
     {
       name: "Classic Margherita Pizza",
       description: "Tomato, mozzarella, fresh basil",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/058/700/845/large_2x/free-isolated-on-transparent-background-delicious-pizza-topped-with-fresh-tomatoes-basil-and-melted-cheese-perfect-for-food-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 26.99,
       rating: 4.1,
       calories: 590,
@@ -233,8 +222,7 @@ const dummyData = {
     {
       name: "Protein Power Bowl",
       description: "Grilled chicken, quinoa, veggies",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/056/106/379/large_2x/top-view-salad-with-chicken-avocado-tomatoes-and-lettuce-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 29.99,
       rating: 4.8,
       calories: 580,
@@ -245,8 +233,7 @@ const dummyData = {
     {
       name: "Paneer Burrito",
       description: "Paneer cubes, spicy masala, rice, beans",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/056/565/254/large_2x/burrito-with-cauliflower-and-vegetables-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 24.99,
       rating: 4.2,
       calories: 510,
@@ -257,8 +244,7 @@ const dummyData = {
     {
       name: "Chicken Club Sandwich",
       description: "Grilled chicken, lettuce, cheese, tomato",
-      image_url:
-        "https://static.vecteezy.com/system/resources/previews/060/364/135/large_2x/a-flavorful-club-sandwich-with-turkey-bacon-and-fresh-vegetables-sliced-and-isolated-on-a-transparent-background-free-png.png",
+      image_url: "", // Will be replaced by getPublicImageUrl
       price: 27.49,
       rating: 4.5,
       calories: 610,
