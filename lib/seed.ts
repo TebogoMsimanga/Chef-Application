@@ -2,6 +2,7 @@ import { ID } from "react-native-appwrite";
 import { appwriteConfig, databases, storage } from "./appwrite";
 import dummyData from "./data";
 
+
 interface Category {
   name: string;
   description: string;
@@ -121,46 +122,83 @@ async function clearStorage(): Promise<void> {
 
 // Function to get alternative public image URL
 function getPublicImageUrl(itemName: string): string {
-  const imageMap: Record<string, string> = {
-    "Classic Cheeseburger":
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500",
-    "Pepperoni Pizza":
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500",
-    "Bean Burrito":
-      "https://images.unsplash.com/photo-1664478546384-d57ffe74a78c?q=80&w=500",
-    "BBQ Bacon Burger":
-      "https://images.unsplash.com/photo-1553979459-d2229ba7433b?q=80&w=500",
-    "Chicken Caesar Wrap":
-      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?q=80&w=500",
-    "Grilled Veggie Sandwich":
-      "https://images.unsplash.com/photo-1540914124281-342587941389?q=80&w=500",
-    "Double Patty Burger":
-      "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=500",
-    "Paneer Tikka Wrap":
-      "https://images.unsplash.com/photo-1667207393917-ae9aeade6da3?q=80&w=500",
-    "Mexican Burrito Bowl":
-      "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?q=80&w=500",
-    "Spicy Chicken Sandwich":
-      "https://images.unsplash.com/photo-1606755962773-d324e0a13086?q=80&w=500",
-    "Classic Margherita Pizza":
-      "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?q=80&w=500",
-    "Protein Power Bowl":
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500",
-    "Paneer Burrito":
-      "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?q=80&w=500",
-    "Chicken Club Sandwich":
-      "https://images.unsplash.com/photo-1567234669003-dce7a7a88821?q=80&w=500",
-  };
-
-  return (
-    imageMap[itemName] ||
-    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=500"
-  ); // Default food image
+const imageMap: Record<string, string> = {
+// Starters
+"Crispy Calamari": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c52c.png",
+"Bruschetta": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c52d.png",
+"Spinach Artichoke Dip": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c52e.png",
+"Buffalo Wings": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c52f.png",
+"Loaded Nachos": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c530.png",
+"Mozzarella Sticks": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c531.png",
+"Garlic Knots": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c532.png",
+"Hummus Platter": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c533.png",
+"Potato Skins": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c534.png",
+"Spring Rolls": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c535.png",
+// Breakfast
+"Classic American Breakfast": "https://assets.stickpng.com/images/5e8f02adee3ef200041aa0c0.png",
+"Belgian Waffles": "https://assets.stickpng.com/images/5873dda1f3a71010b5e8ef81.png",
+"Eggs Benedict": "https://assets.stickpng.com/images/58da5be55f58be1227aec91e.png",
+"Breakfast Burrito": "https://assets.stickpng.com/thumbs/58727fccf3a71010b5e8ef0b.png",
+"Pancake Stack": "https://assets.stickpng.com/images/589603e8cba9841eabab60e3.png",
+"Avocado Toast": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c53b.png",
+"Oatmeal Bowl": "https://assets.stickpng.com/images/5c458614f8ab04028c27e072.png",
+"French Toast": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c53d.png",
+"Breakfast Sandwich": "https://assets.stickpng.com/images/58da5bef5f58be1227aec91f.png",
+"Yogurt Parfait": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c53f.png",
+// Lunch
+"Grilled Chicken Caesar Salad": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c540.png",
+"Turkey Club Sandwich": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c541.png",
+"Tuna Melt": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c542.png",
+"Veggie Wrap": "https://assets.stickpng.com/thumbs/5a1c3a73f65d84088faf1412.png",
+"Chicken Quesadilla": "https://assets.stickpng.com/thumbs/58727f9ef3a71010b5e8ef05.png",
+"Quinoa Bowl": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c545.png",
+"BLT Sandwich": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c546.png",
+"Greek Salad": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c547.png",
+"Chicken Pesto Panini": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c548.png",
+"Soup of the Day": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c549.png",
+// Drinks
+"Fresh Orange Juice": "https://assets.stickpng.com/images/580b57fcd9996e24bc43c168.png",
+"Iced Coffee": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c54b.png",
+"Smoothie": "https://assets.stickpng.com/images/5a5b7a9714d8c4188e0b08f4.png",
+"Lemonade": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c54d.png",
+"Green Tea": "https://assets.stickpng.com/images/580b57fcd9996e24bc43c1fe.png",
+"Mango Lassi": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c54f.png",
+"Sparkling Water": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c550.png",
+"Hot Chocolate": "https://assets.stickpng.com/images/61195252f8fe340004e0d2ec.png",
+"Chai Latte": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c552.png",
+"Protein Shake": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c553.png",
+// Supper
+"Grilled Salmon": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c554.png",
+"Ribeye Steak": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c555.png",
+"Chicken Marsala": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c556.png",
+"Vegetable Lasagna": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c557.png",
+"Shrimp Scampi": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c558.png",
+"Pork Chop": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c559.png",
+"Eggplant Parmesan": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c55a.png",
+"Sea Bass": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c55b.png",
+"Beef Tenderloin": "https://assets.stickpng.com/images/5c308c10a97bc40295eb841e.png",
+"Roasted Duck": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c55d.png",
+// Meals
+"Family Pizza Pack": "https://assets.stickpng.com/images/587380d3f3a71010b5e8ef3b.png",
+"Burger Combo": "https://assets.stickpng.com/thumbs/5882486ce81acb96424ffaae.png",
+"Chicken Tender Meal": "https://assets.stickpng.com/images/580b57fbd9996e24bc43c0cc.png",
+"Vegan Bowl Combo": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c561.png",
+"Fish and Chips": "https://assets.stickpng.com/images/5c346a944d5036028cf54082.png",
+"Steak Dinner": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c563.png",
+"Pasta Family Pack": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c564.png",
+"Taco Meal Deal": "https://assets.stickpng.com/images/58727f98f3a71010b5e8ef04.png",
+"Sushi Combo": "https://assets.stickpng.com/images/580b57fcd9996e24bc43c1fb.png",
+"BBQ Platter": "https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c567.png",
+};
+return (
+imageMap[itemName] ||
+"https://www.stickpng.com/assets/images/580b57fcd9996e24bc43c52c.png" // Default food image
+);
 }
 
-async function uploadImageToStorage(imageUrl: string) {
+async function uploadImageToStorage(imageUrl: string, retries = 3) {
   try {
-    console.log(`Uploading image from ${imageUrl}...`);
+    console.log(`Uploading image from ${imageUrl}... (Attempts remaining: ${retries})`);
 
     const response = await fetch(imageUrl);
 
@@ -175,6 +213,7 @@ async function uploadImageToStorage(imageUrl: string) {
       type: "image/jpeg",
       size: blob.size,
       uri: imageUrl,
+      file: blob // Add the blob as a file property
     };
 
     console.log(`Uploading image of size: ${Math.round(blob.size / 1024)}KB`);
@@ -193,6 +232,11 @@ async function uploadImageToStorage(imageUrl: string) {
     return { id: file.$id, url: fileUrl };
   } catch (error) {
     console.error("Error uploading image:", error);
+    if (retries > 0) {
+      console.log(`Retrying upload for ${imageUrl}...`);
+      await delay(1000); // Wait 1 second before retrying
+      return uploadImageToStorage(imageUrl, retries - 1);
+    }
     throw error;
   }
 }

@@ -4,10 +4,19 @@ import MealCard from "@/components/MealCard";
 import SearchBar from "@/components/SearchBar";
 import { images } from "@/constants";
 import { getCategories, getMenu } from "@/lib/appwrite";
+import seed from "@/lib/seed";
 import useAppwrite from "@/lib/useAppwrite";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Button,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
@@ -23,14 +32,18 @@ const Search = () => {
       query,
       limit: 6,
     },
+    skip: true, // Skip initial fetch
   });
 
-  const { data: categories } = useAppwrite({ fn: getCategories });
+  const { data: categories } = useAppwrite({
+    fn: getCategories,
+  });
 
   useEffect(() => {
-    refetch({ category, query, limit: 6 });
-  }, [category, query]);
+        refetch({ category, query, limit: 6})
+    }, [category, query]);
 
+  
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
@@ -80,26 +93,13 @@ const Search = () => {
             {/* <Filter categories={categories} /> */}
             <Text>Filter</Text>
             <Filter categories={categories || []} />
-            {/* <Button
-              title={loading ? "Seeding..." : "Seed Database"}
-              onPress={async () => {
-                try {
-                  await seed();
-                  refetch();
-                  Alert.alert("Success", "Database seeded successfully!");
-                } catch (error) {
-                  console.error("Failed to seed the database", error);
-                  Alert.alert(
-                    "Error",
-                    "Failed to seed the database. Check console for details."
-                  );
-                }
-              }}
-              disabled={loading}
-            /> */}
+           <Button title="seed" onPress={() => seed().catch((error) => console.log("failed to seed", error))}/>
+
           </View>
         )}
-        ListEmptyComponent={() => !loading && <Text>No results</Text>}
+        ListEmptyComponent={() =>
+          !loading  && <Text>No results</Text>
+        }
       />
     </SafeAreaView>
   );
