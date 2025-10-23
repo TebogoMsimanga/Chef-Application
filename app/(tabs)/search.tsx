@@ -40,10 +40,9 @@ const Search = () => {
   });
 
   useEffect(() => {
-        refetch({ category, query, limit: 6})
-    }, [category, query]);
+    refetch({ category, query, limit: 6 });
+  }, [category, query]);
 
-  
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
@@ -93,13 +92,15 @@ const Search = () => {
             {/* <Filter categories={categories} /> */}
             <Text>Filter</Text>
             <Filter categories={categories || []} />
-           <Button title="seed" onPress={() => seed().catch((error) => console.log("failed to seed", error))}/>
-
+            {/* <Button
+              title="seed"
+              onPress={() =>
+                seed().catch((error) => console.log("failed to seed", error))
+              }
+            /> */}
           </View>
         )}
-        ListEmptyComponent={() =>
-          !loading  && <Text>No results</Text>
-        }
+        ListEmptyComponent={() => !loading && <Text>No results</Text>}
       />
     </SafeAreaView>
   );
