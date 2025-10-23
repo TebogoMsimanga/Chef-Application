@@ -41,10 +41,14 @@ const MealCard = ({ item }: { item: MenuItem }) => {
         resizeMode="contain"
         defaultSource={placeholderImage}
       />
-      <View style={styles.content}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
-      </View>
+
+      <Text style={styles.name} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text style={styles.price}>From R{item.price.toFixed(2)}</Text>
+      <TouchableOpacity onPress={() => {}}>
+        <Text style={styles.name}>Add to Cart +</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 };
@@ -53,19 +57,21 @@ export default MealCard;
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
+    paddingVertical: 36,
+    paddingHorizontal: 14,
+    paddingTop: 96,
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 48,
-    height: 160,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#FE8C00",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    shadowColor: "rgba(0,0,0,0.1)",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
   image: {
     width: 128,
@@ -74,18 +80,17 @@ const styles = StyleSheet.create({
     top: -40,
     alignSelf: "center",
   },
-  content: {
-    marginTop: 64,
-    gap: 8,
-  },
   name: {
     fontSize: 16,
     fontFamily: "Quicksand-Bold",
     color: "#1A1A1A",
+    textAlign: "center",
+    marginBottom: 10,
   },
   price: {
     fontSize: 14,
     fontFamily: "Quicksand-SemiBold",
     color: "#FE8C00",
+    marginBottom: 20,
   },
 });

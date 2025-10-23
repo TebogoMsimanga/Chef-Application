@@ -69,10 +69,10 @@ const Search = () => {
             </View>
 
             {/* <SearchBar /> */}
-            <Text>Search</Text>
+            <Text>Search Input</Text>
             {/* <Filter categories={categories} /> */}
             <Text>Filter</Text>
-            <Button
+            {/* <Button
               title={loading ? "Seeding..." : "Seed Database"}
               onPress={async () => {
                 try {
@@ -88,7 +88,7 @@ const Search = () => {
                 }
               }}
               disabled={loading}
-            />
+            /> */}
           </View>
         )}
         ListEmptyComponent={() => !loading && <Text>No results</Text>}
@@ -105,44 +105,44 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flex: 1,
-    maxWidth: "48%", // max-w-[48%]
+    maxWidth: "48%", 
   },
   columnWrapper: {
-    gap: 28, // gap-7 = 28px
+    gap: 28, 
   },
   contentContainer: {
-    gap: 28, // gap-7 = 28px
-    paddingHorizontal: 20, // px-5 = 20px
-    paddingBottom: 128, // pb-32 = 128px
+    gap: 28, 
+    paddingHorizontal: 20, 
+    paddingBottom: 128, 
   },
   headerContainer: {
-    marginVertical: 20, // my-5 = 20px
-    gap: 20, // gap-5 = 20px
+    marginVertical: 20, 
+    gap: 20, 
   },
   headerTopRow: {
-    flexDirection: "row", // flex-row
-    justifyContent: "space-between", // flex-between
-    alignItems: "flex-start", // flex-start
-    width: "100%", // w-full
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "flex-start", 
+    width: "100%", 
   },
   headerLeft: {
     alignItems: "flex-start",
   },
   headerTitle: {
-    fontSize: 12, // text-xs
-    fontFamily: "Quicksand-Bold", // font-quicksand-bold
+    fontSize: 12, 
+    fontFamily: "Quicksand-Bold", 
     textTransform: "uppercase",
-    color: "#FF6B00", // text-primary (replace with your theme color)
+    color: "#FF6B00", 
   },
   headerSubtitleRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 4, // gap-x-1 = 4px
-    marginTop: 2, // mt-0.5 = 2px
+    gap: 4, 
+    marginTop: 2, 
   },
   headerSubtitle: {
-    fontSize: 16, // text-base
+    fontSize: 16, 
     fontFamily: "Quicksand-SemiBold",
-    color: "#1A1A1A", // text-dark-100 (replace with your theme color)
+    color: "#1A1A1A", 
   },
 });

@@ -115,7 +115,6 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
       protein: menu.protein,
       rating: menu.rating,
       type: menu.type || "default",
-      // Include Appwrite's system fields
       $id: menu.$id,
       $createdAt: menu.$createdAt,
       $updatedAt: menu.$updatedAt,
