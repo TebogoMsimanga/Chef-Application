@@ -1,24 +1,12 @@
-import { View, Text, TextInput, StyleSheet } from 'react-native'
+import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function SearchBar() {
+const SearchBar = () => {
   return (
-   <TextInput
-      placeholder="Search menu..."
-      style={styles.searchInput}
-      editable={false} 
-    />
+    <View>
+      <Text>SearchBar</Text>
+    </View>
   )
 }
 
-const styles = StyleSheet.create({
-  searchInput: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: "#ffffff",
-  },
-});
+export default SearchBar

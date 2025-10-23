@@ -1,11 +1,13 @@
 import AddButton from "@/components/AddButton";
+import Filter from "@/components/Filter";
 import MealCard from "@/components/MealCard";
+import SearchBar from "@/components/SearchBar";
+import { images } from "@/constants";
 import { getCategories, getMenu } from "@/lib/appwrite";
-import seed from "@/lib/seed";
 import useAppwrite from "@/lib/useAppwrite";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect } from "react";
-import { Alert, Button, FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
@@ -62,6 +64,11 @@ const Search = () => {
                   <Text style={styles.headerSubtitle}>
                     Find your favorite food
                   </Text>
+                  <Image
+                    source={images.arrowDown}
+                    style={styles.arrowDownIcon}
+                    resizeMode="contain"
+                  />
                 </View>
               </View>
 
@@ -69,9 +76,10 @@ const Search = () => {
             </View>
 
             {/* <SearchBar /> */}
-            <Text>Search Input</Text>
+            <SearchBar />
             {/* <Filter categories={categories} /> */}
             <Text>Filter</Text>
+            <Filter categories={categories || []} />
             {/* <Button
               title={loading ? "Seeding..." : "Seed Database"}
               onPress={async () => {
@@ -105,44 +113,51 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flex: 1,
-    maxWidth: "48%", 
+    maxWidth: "48%",
   },
   columnWrapper: {
-    gap: 28, 
+    gap: 28,
+  },
+  arrowDownIcon: {
+    width: 12,
+    height: 12,
+    marginTop: 4,
   },
   contentContainer: {
-    gap: 28, 
-    paddingHorizontal: 20, 
-    paddingBottom: 128, 
+    gap: 28,
+    paddingHorizontal: 20,
+    paddingBottom: 128,
   },
   headerContainer: {
-    marginVertical: 20, 
-    gap: 20, 
+    marginVertical: 20,
+    gap: 20,
   },
   headerTopRow: {
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "flex-start", 
-    width: "100%", 
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    width: "100%",
   },
   headerLeft: {
     alignItems: "flex-start",
   },
   headerTitle: {
-    fontSize: 12, 
-    fontFamily: "Quicksand-Bold", 
+    fontSize: 12,
+    fontFamily: "Quicksand-Bold",
     textTransform: "uppercase",
-    color: "#FF6B00", 
+    color: "#FF6B00",
   },
   headerSubtitleRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 4, 
-    marginTop: 2, 
+    gap: 4,
+    marginTop: 2,
+    justifyContent: "center",
+    alignContent: "center",
   },
   headerSubtitle: {
-    fontSize: 16, 
+    fontSize: 16,
     fontFamily: "Quicksand-SemiBold",
-    color: "#1A1A1A", 
+    color: "#1A1A1A",
   },
 });

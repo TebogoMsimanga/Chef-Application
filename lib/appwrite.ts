@@ -138,7 +138,22 @@ export const getCategories = async () => {
       appwriteConfig.categoryTable,
       [Query.orderAsc("name")]
     );
-    return categories.documents;
+
+    // Process and validate category items
+    const processedCategories = categories.documents.map((category) => ({
+      name: category.name,
+      description: category.description,
+      // Include Appwrite's system fields
+      $id: category.$id,
+      $createdAt: category.$createdAt,
+      $updatedAt: category.$updatedAt,
+      $permissions: category.$permissions,
+      $collectionId: category.$collectionId,
+      $databaseId: category.$databaseId,
+      $sequence: category.$sequence,
+    }));
+
+    return processedCategories;
   } catch (error) {
     console.error("Error fetching categories:", error);
     throw new Error(error as string);
