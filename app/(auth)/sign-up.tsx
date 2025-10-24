@@ -8,7 +8,14 @@ import * as Sentry from "@sentry/react-native";
 
 const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    address: "",
+    about: "",
+  });
 
   const submit = async () => {
     if (!form.name || !form.email || !form.password)

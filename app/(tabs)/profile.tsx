@@ -1,14 +1,23 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  FlatList,
+} from "react-native";
 import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { InfoItemProps } from "@/type";
 import useAuthStore from "@/store/auth.store";
+import { StatusBar } from "expo-status-bar";
+import CustomHeader from "@/components/CustomHeader";
 
 const InfoItem = ({ icon, label, value }: InfoItemProps) => (
   <View style={styles.infoItem}>
     <View style={styles.iconCircle}>
-      <Ionicons name={icon} size={20} color="#f7931a" />
+      <Ionicons name={icon as any} size={20} color="#f7931a" />
     </View>
     <View style={styles.textContainer}>
       <Text style={styles.label}>{label}</Text>
@@ -60,33 +69,35 @@ export default function Profile() {
   ];
   return (
     <SafeAreaView style={styles.container}>
-      {/* Profile image */}
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: user.avatar }} style={styles.profileImage} />
-        <TouchableOpacity style={styles.editIcon}>
-          <Ionicons name="pencil" size={16} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      <StatusBar style="dark" />
+      {/* <CustomHeader /> */}
+      <FlatList
+        data={infoData}
+        renderItem={({ item }) => <InfoItem {...item} />}
+        keyExtractor={(_, index) => index.toString()}
+        ListHeaderComponent={() => (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: user.avatar }} style={styles.profileImage} />
+            <TouchableOpacity style={styles.editIcon}>
+              <Ionicons name="pencil" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+        contentContainerStyle={styles.infoCard}
+        ListFooterComponent={() => (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.editButton}>
+              <Text style={styles.editText}>Edit Profile</Text>
+            </TouchableOpacity>
 
-      {/* Info card with FlatList */}
-      <View style={styles.infoCard}>
-        <FlatList
-          data={infoData}
-          renderItem={({ item }) => <InfoItem {...item} />}
-          keyExtractor={(_, index) => index.toString()}
-          scrollEnabled={false} // Disable scrolling for fixed items; enable if more fields added
-        />
-      </View>
-
-      {/* Buttons */}
-      <TouchableOpacity style={styles.editButton}>
-        <Text style={styles.editText}>Edit Profile</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-        <Ionicons name="log-out-outline" size={18} color="#e74c3c" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+            <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+              <Ionicons name="log-out-outline" size={18} color="#e74c3c" />
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        scrollEnabled={false}
+      />
     </SafeAreaView>
   );
 }
@@ -97,10 +108,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingBottom: 50,
+    marginTop: 0
   },
   imageContainer: {
     alignItems: "center",
-    marginTop: 60,
+    marginTop: 10,
+    marginBottom: 20,
   },
   profileImage: {
     width: 110,
@@ -116,6 +129,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7931a",
     padding: 6,
     borderRadius: 20,
+  },
+  buttonContainer: {
+    marginTop: 10,
   },
   infoCard: {
     backgroundColor: "#fff",

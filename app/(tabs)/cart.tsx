@@ -6,11 +6,9 @@ import CustomHeader from "@/components/CustomHeader";
 import { PaymentInfoProps } from "@/type";
 import CustomButton from "@/components/CustomButton";
 import CartItem from "@/components/CartItem";
+import { StatusBar } from "expo-status-bar";
 
-const PaymentInfo = ({
-  label,
-  value,
-}: PaymentInfoProps) => (
+const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
@@ -25,9 +23,10 @@ export default function Cart() {
 
   return (
     <SafeAreaView style={{ backgroundColor: "#fff", height: "100%" }}>
+      <StatusBar style="dark" />
       <FlatList
         data={items}
-        renderItem={({ item }) => <CartItem item={item}/>}
+        renderItem={({ item }) => <CartItem item={item} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingBottom: 112,

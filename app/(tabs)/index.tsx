@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Sentry from "@sentry/react-native"
 import useAuthStore from "@/store/auth.store";
+import { StatusBar } from "expo-status-bar";
 
 export default function Index() {
   const { user } = useAuthStore();
@@ -23,6 +24,7 @@ export default function Index() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <StatusBar style="dark" />
       <FlatList
         data={menu}
         renderItem={({ item, index }) => {
