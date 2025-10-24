@@ -115,3 +115,9 @@ interface GetMenuParams {
   category: string;
   query: string;
 }
+
+export interface InfoItemProps {
+  icon: string;
+  label: string;
+  value: string;
+};

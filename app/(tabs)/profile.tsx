@@ -1,75 +1,81 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from "react-native";
+import React, { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { InfoItemProps } from "@/type";
+import useAuthStore from "@/store/auth.store";
+
+const InfoItem = ({ icon, label, value }: InfoItemProps) => (
+  <View style={styles.infoItem}>
+    <View style={styles.iconCircle}>
+      <Ionicons name={icon} size={20} color="#f7931a" />
+    </View>
+    <View style={styles.textContainer}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  </View>
+);
 
 export default function Profile() {
+  const { user, isLoading, logout, fetchAuthenticatedUser } = useAuthStore();
+
+  useEffect(() => {
+    if (!user && !isLoading) {
+      fetchAuthenticatedUser();
+    }
+  }, [user, isLoading]);
+
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (!user) {
+    return <Text>Not authenticated. Please log in.</Text>;
+  }
+
+  const infoData: InfoItemProps[] = [
+    {
+      icon: "person-outline",
+      label: "Full Name",
+      value: user.name || "Adrian Hajdin",
+    },
+    {
+      icon: "mail-outline",
+      label: "Email",
+      value: user.email || "adrian@jsmastery.com",
+    },
+    { icon: "call-outline", label: "Phone number", value: "+1 555 123 4567" },
+    {
+      icon: "location-outline",
+      label: "Address 1 - (Home)",
+      value: "123 Main Street, Springfield, IL 62704",
+    },
+    {
+      icon: "person",
+      label: "About Me",
+      value:
+        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam officiis enim possimus sed. .",
+    },
+  ];
   return (
     <SafeAreaView style={styles.container}>
-      {/* profile image */}
+      {/* Profile image */}
       <View style={styles.imageContainer}>
-        <Image source={{}} style={styles.profileImage} />
+        <Image source={{ uri: user.avatar }} style={styles.profileImage} />
         <TouchableOpacity style={styles.editIcon}>
           <Ionicons name="pencil" size={16} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* info card */}
+      {/* Info card with FlatList */}
       <View style={styles.infoCard}>
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="person-outline" size={20} color="#f7931a" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.label}>Full Name</Text>
-            <Text style={styles.value}>Adrian Hajdin</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="mail-outline" size={20} color="#f7931a" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>adrian@jsmastery.com</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="call-outline" size={20} color="#f7931a" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.label}>Phone number</Text>
-            <Text style={styles.value}>+1 555 123 4567</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="location-outline" size={20} color="#f7931a" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.label}>Address 1 - (Home)</Text>
-            <Text style={styles.value}>
-              123 Main Street, Springfield, IL 62704
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="person" size={20} color="#f7931a" />
-          </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.label}>About Me</Text>
-            <Text style={styles.value}>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam
-              officiis enim possimus sed. .
-            </Text>
-          </View>
-        </View>
+        <FlatList
+          data={infoData}
+          renderItem={({ item }) => <InfoItem {...item} />}
+          keyExtractor={(_, index) => index.toString()}
+          scrollEnabled={false} // Disable scrolling for fixed items; enable if more fields added
+        />
       </View>
 
       {/* Buttons */}
@@ -77,7 +83,7 @@ export default function Profile() {
         <Text style={styles.editText}>Edit Profile</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Ionicons name="log-out-outline" size={18} color="#e74c3c" />
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -85,11 +91,12 @@ export default function Profile() {
   );
 }
 
+// Styles remain unchanged from original
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingBottom: 50
+    paddingBottom: 50,
   },
   imageContainer: {
     alignItems: "center",
