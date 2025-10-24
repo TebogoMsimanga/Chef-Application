@@ -21,7 +21,9 @@ const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => (
 );
 
 export default function TabLayout() {
+  
   return (
+    
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -34,7 +36,7 @@ export default function TabLayout() {
           marginHorizontal: 20,
           height: 80,
           position: "absolute",
-          bottom: 60,
+          bottom: 10,
           backgroundColor: "white",
           shadowColor: "#1a1a1a",
           shadowOffset: { width: 0, height: 2 },
