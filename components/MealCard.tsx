@@ -1,3 +1,4 @@
+import { useCartStore } from "@/store/cart.store";
 import { MenuItem } from "@/type";
 import React from "react";
 import {
@@ -12,6 +13,8 @@ import {
 const MealCard = ({ item }: { item: MenuItem }) => {
   // Default to placeholder image
   const placeholderImage = require("@/assets/images/placeholder.png");
+
+  const { addItem } = useCartStore();
 
   // Log the entire item for debugging
   console.log(
@@ -46,7 +49,13 @@ const MealCard = ({ item }: { item: MenuItem }) => {
         {item.name}
       </Text>
       <Text style={styles.price}>From R{item.price.toFixed(2)}</Text>
-      <TouchableOpacity onPress={() => {}}>
+      <TouchableOpacity onPress={() => addItem({
+        id: item.$id,
+        name: item.name,
+        price: item.price,
+        image_url: item.image_url,
+        customizations: []
+      })}>
         <Text style={styles.name}>Add to Cart +</Text>
       </TouchableOpacity>
     </TouchableOpacity>

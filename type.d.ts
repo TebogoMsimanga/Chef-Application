@@ -2,6 +2,7 @@ import { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { Models } from "react-native-appwrite";
 
 export interface MenuItem extends Models.Document {
+  $id: string;
   name: string;
   price: number;
   image_id: string;
@@ -96,6 +97,13 @@ interface CreateUserPrams {
   email: string;
   password: string;
   name: string;
+}
+
+interface PaymentInfoProps {
+    label: string;
+    value: string;
+    labelStyle?: string;
+    valueStyle?: string;
 }
 
 interface SignInParams {

@@ -1,10 +1,121 @@
-import {View, Text} from 'react-native'
-import React from 'react'
+import { View, Text, FlatList, StyleSheet } from "react-native";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useCartStore } from "@/store/cart.store";
+import CustomHeader from "@/components/CustomHeader";
+import { PaymentInfoProps } from "@/type";
+import CustomButton from "@/components/CustomButton";
+import CartItem from "@/components/CartItem";
+
+const PaymentInfo = ({
+  label,
+  value,
+}: PaymentInfoProps) => (
+  <View style={styles.row}>
+    <Text style={styles.label}>{label}</Text>
+    <Text style={styles.value}>{value}</Text>
+  </View>
+);
 
 export default function Cart() {
-    return (
-        <View>
-            <Text>MenuItem</Text>
-        </View>
-    )
+  const { items, getTotalItems, getTotalPrice } = useCartStore();
+
+  const totalItems = getTotalItems();
+  const totalPrice = getTotalPrice();
+
+  return (
+    <SafeAreaView style={{ backgroundColor: "#fff", height: "100%" }}>
+      <FlatList
+        data={items}
+        renderItem={({ item }) => <CartItem item={item}/>}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          paddingBottom: 112,
+          paddingHorizontal: 20,
+          paddingTop: 20,
+        }}
+        ListHeaderComponent={() => <CustomHeader title="Your Cart" />}
+        ListEmptyComponent={() => <Text>Cart Empty</Text>}
+        ListFooterComponent={() =>
+          totalItems > 0 && (
+            <View style={{ gap: 20 }}>
+              <View
+                style={{
+                  marginTop: 24,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                  padding: 20,
+                  borderRadius: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#1A1A1A",
+                    marginBottom: 20,
+                    fontSize: 20,
+                    fontFamily: "Quicksand-Bold",
+                  }}
+                >
+                  Payment Summary
+                </Text>
+
+                <PaymentInfo
+                  label={`Total Items (${totalItems})`}
+                  value={`R${totalPrice.toFixed(2)}`}
+                />
+
+                <PaymentInfo label={`Delivery Fee`} value={`R50`} />
+
+                <PaymentInfo
+                  label={`Discount`}
+                  value={`-R15`}
+                  valueStyle={"!color: #16A34A"}
+                />
+
+                <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderColor: "#D1D5DB",
+                    marginVertical: 8,
+                  }}
+                />
+
+                <PaymentInfo
+                  label={`Total`}
+                  value={`R${(totalPrice + 5 - 0.5).toFixed(2)}`}
+                  labelStyle={
+                    "fontSize: 16 fontFamily: Quicksand-Bold color: #1A1A1A"
+                  }
+                  valueStyle="fontSize: 16 fontFamily: Quicksand-Bold color: #1A1A1A !textAlign: right"
+                />
+              </View>
+              <CustomButton
+                title="Order Now"
+                style={{ backgroundColor: "#FE8C00" }}
+              />
+            </View>
+          )
+        }
+      />
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  label: {
+    fontSize: 16,
+    fontFamily: "Quicksand-Medium",
+    color: "#E5E7EB",
+  },
+  value: {
+    fontSize: 16,
+    fontFamily: "Quicksand-Bold",
+    color: "#1A1A1A",
+  },
+});

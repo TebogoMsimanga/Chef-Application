@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import CartButton from "@/components/CartButton";
 
 const Search = () => {
   const { category, query } = useLocalSearchParams<{
@@ -86,7 +87,7 @@ const Search = () => {
                 </View>
               </View>
 
-              <AddButton />
+             <CartButton />
             </View>
 
             {/* <SearchBar /> */}
