@@ -63,6 +63,7 @@ interface TabBarIconProps {
   focused: boolean;
   icon: ImageSourcePropType;
   title: string;
+  totalItems?: number;
 }
 
 interface CustomButtonProps {
@@ -116,8 +117,35 @@ interface GetMenuParams {
   query: string;
 }
 
+interface CreateMenuItemParams {
+  name: string;
+  price: number;
+  image_id: string;
+  description: string;
+  calories: number;
+  protein: number;
+  rating: number;
+  type: string;
+  category: string;
+}
+
+interface CreateMenuItemProps {
+  onSuccess?: () => void;
+}
+
  interface InfoItemProps {
   icon: string;
   label: string;
   value: string;
+};
+
+
+interface FavoritesStore {
+  favorites: string[];  
+    addFavorite: (id: string) => void;
+    removeFavorite: (id: string) => void;
+    toggleFavorite: (id: string) => void;
+    isFavorite: (id: string) => boolean;
+    clearFavorites: () => void;
+    getTotalFavorites: () => number;
 };

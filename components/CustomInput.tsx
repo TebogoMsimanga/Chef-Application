@@ -3,29 +3,20 @@ import React, { useState } from "react";
 import { CustomInputProps } from "@/type";
 
 const CustomInput = ({
-  placeholder = "Enter text....",
+  placeholder = "Enter text...",
   value,
   onChangeText,
   label,
   secureTextEntry = false,
   keyboardType = "default",
-}: CustomInputProps) => {
+  multiline = false, // ✅ new prop
+}: CustomInputProps & { multiline?: boolean }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View style={{ width: "100%" }}>
-      <Text
-        style={{
-          fontSize: 16,
-          textAlign: "left",
-          width: "100%",
-          fontFamily: "Quicksand-Medium",
-          color: "#6B7280",
-          paddingLeft: 8,
-        }}
-      >
-        {label}
-      </Text>
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+
       <TextInput
         autoCapitalize="none"
         autoCorrect={false}
@@ -36,10 +27,13 @@ const CustomInput = ({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
-        placeholderTextColor={"#888"}
+        placeholderTextColor="#9CA3AF"
+        multiline={multiline}
+        textAlignVertical={multiline ? "top" : "center"} // ✅ important for multiline
         style={[
           styles.textInput,
-          isFocused ? styles.borderBlue : styles.borderGray,
+          isFocused ? styles.borderActive : styles.borderInactive,
+          multiline && styles.multilineInput, // ✅ better padding & height
         ]}
       />
     </View>
@@ -49,6 +43,16 @@ const CustomInput = ({
 export default CustomInput;
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+  },
+  label: {
+    fontSize: 15,
+    fontFamily: "Quicksand-Medium",
+    color: "#6B7280",
+    marginBottom: 6,
+    paddingLeft: 4,
+  },
   textInput: {
     borderRadius: 8,
     padding: 12,
@@ -59,10 +63,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     lineHeight: 20,
   },
-  borderBlue: {
-    borderColor: "#0a26a0ff",
+  multilineInput: {
+    minHeight: 100,
+    textAlignVertical: "top",
+    paddingTop: 10,
   },
-  borderGray: {
-    borderColor: "#3c3d3fff",
+  borderActive: {
+    borderColor: "#0A26A0",
+  },
+  borderInactive: {
+    borderColor: "#E5E7EB",
   },
 });

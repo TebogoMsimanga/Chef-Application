@@ -1,4 +1,6 @@
+import { images } from "@/constants";
 import { useCartStore } from "@/store/cart.store";
+import { useFavoritesStore } from "@/store/favorite.store"; 
 import { MenuItem } from "@/type";
 import React from "react";
 import {
@@ -9,20 +11,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";  
 
 const MealCard = ({ item }: { item: MenuItem }) => {
-  // Default to placeholder image
+  
   const placeholderImage = require("@/assets/images/placeholder.png");
 
   const { addItem } = useCartStore();
-
-  // Log the entire item for debugging
+  const { toggleFavorite, isFavorite } = useFavoritesStore();  
   console.log(
     `Menu item data for ${item.name}:`,
     JSON.stringify(item, null, 2)
   );
 
-  // Handle different types of image_url values
+  
   let imageSource: ImageSourcePropType = placeholderImage;
 
   try {
@@ -48,6 +50,14 @@ const MealCard = ({ item }: { item: MenuItem }) => {
       <Text style={styles.name} numberOfLines={1}>
         {item.name}
       </Text>
+
+     
+      <View style={styles.detailsRow}>
+        <Text style={styles.detailText}>{item.rating.toFixed(1)} ⭐</Text>
+        <Text style={styles.detailText}>{item.calories} cal</Text>
+        <Text style={styles.detailText}>{item.protein}g protein</Text>
+      </View>
+
       <Text style={styles.price}>From R{item.price.toFixed(2)}</Text>
       <TouchableOpacity onPress={() => addItem({
         id: item.$id,
@@ -56,7 +66,19 @@ const MealCard = ({ item }: { item: MenuItem }) => {
         image_url: item.image_url,
         customizations: []
       })}>
-        <Text style={styles.name}>Add to Cart +</Text>
+        <View style={styles.addToCart}>
+          <Text style={styles.addText}>Add to Cart +</Text>
+        </View>
+      </TouchableOpacity>
+       <TouchableOpacity 
+        style={styles.favoriteButton}
+        onPress={() => toggleFavorite(item.$id)}
+      >
+        <Ionicons 
+          name={isFavorite(item.$id) ? "heart" : "heart-outline"} 
+          size={24} 
+          color={isFavorite(item.$id) ? "#EF4444" : "#5D5F6D"} 
+        />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -67,39 +89,79 @@ export default MealCard;
 const styles = StyleSheet.create({
   container: {
     position: "relative",
-    paddingVertical: 36,
-    paddingHorizontal: 14,
-    paddingTop: 96,
+    paddingVertical: 40,  
+    paddingHorizontal: 16,
+    paddingTop: 100,
     backgroundColor: "#FFFFFF",
-    borderRadius: 24,
+    borderRadius: 32, 
     borderWidth: 1,
     borderColor: "#FE8C00",
     alignItems: "center",
     justifyContent: "flex-end",
-    shadowColor: "rgba(0,0,0,0.1)",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowColor: "rgba(0,0,0,0.15)",  
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,  
   },
   image: {
-    width: 128,
-    height: 128,
+    width: 140,  
+    height: 140,
     position: "absolute",
-    top: -40,
+    top: -50,
     alignSelf: "center",
+    borderRadius: 70,  
+  },
+  favoriteButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: 4,
   },
   name: {
-    fontSize: 16,
+    fontSize: 18,  
     fontFamily: "Quicksand-Bold",
     color: "#1A1A1A",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 8,
+  },
+  detailsRow: {
+    flexDirection: "column",
+    justifyContent: "center",
+    textAlign: "center",
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  detailText: {
+    fontSize: 12,
+    fontFamily: "Quicksand-Medium",
+    color: "#5D5F6D",
   },
   price: {
-    fontSize: 14,
+    fontSize: 16,  
     fontFamily: "Quicksand-SemiBold",
     color: "#FE8C00",
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  addToCart: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FE8C00",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    gap: 8,
+  },
+  addText: {
+    color: "#FFFFFF",
+    fontFamily: "Quicksand-Bold",
+    fontSize: 14,
+  },
+  addIcon: {
+    width: 16,
+    height: 16,
+    tintColor: "#FFFFFF",
   },
 });

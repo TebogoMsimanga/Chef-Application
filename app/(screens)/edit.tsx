@@ -1,20 +1,30 @@
-import { View, Text, FlatList } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { StatusBar } from 'expo-status-bar'
-import CustomHeader from '@/components/CustomHeader'
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import CreateMenuItem from '@/components/CreateMenuItem';  
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
-const Edit = () => {
+const Edit = () => {  
+  const [refreshKey, setRefreshKey] = useState(0);
+
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <FlatList 
-      data={""}
-      renderItem={() => {}}
-      ListHeaderComponent={() => <CustomHeader title='Edit Menu' />}
-      />
+        <CreateMenuItem onSuccess={() => setRefreshKey(prev => prev + 1)} />
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default Edit
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  formContainer: {
+    padding: 20,
+    paddingBottom: 40,
+    flexGrow: 1,
+  },
+});
+
+export default Edit;
