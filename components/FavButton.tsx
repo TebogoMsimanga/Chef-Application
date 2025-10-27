@@ -1,27 +1,31 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { images } from "@/constants";
-import { useCartStore } from "@/store/cart.store";
 import { router } from "expo-router";
+import { useFavoritesStore } from "@/store/favorite.store";
+import { Ionicons } from "@expo/vector-icons";
 
-const CartButton = () => {
-  const { getTotalItems } = useCartStore();
-  const totalItems = getTotalItems();
+const FavButton = () => {
+  const totalFavorites = useFavoritesStore((state) => state.getTotalFavorites());
 
   return (
-    <TouchableOpacity style={styles.cartButton} onPress={() => router.push("/cart")}>
-      <Image source={images.bag} style={styles.icon} resizeMode="contain" />
+    <TouchableOpacity style={styles.cartButton} onPress={() => router.push("/favorite")}>  
+      <Ionicons 
+          name={"heart"} 
+          size={24} 
+          color={"#fff"} 
+        /> 
 
-      {totalItems > 0 && (
+      {totalFavorites > 0 && (
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{totalItems}</Text>
+          <Text style={styles.badgeText}>{totalFavorites}</Text>
         </View>
       )}
     </TouchableOpacity>
   );
 };
 
-export default CartButton;
+export default FavButton;
 
 const styles = StyleSheet.create({
   cartButton: {

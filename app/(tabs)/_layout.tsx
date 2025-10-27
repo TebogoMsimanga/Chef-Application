@@ -1,29 +1,48 @@
 import { images } from "@/constants";
+import { useCartStore } from "@/store/cart.store";
 import { TabBarIconProps } from "@/type";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
-const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => (
-  <View style={styles.tabIcon}>
-    <Image
-      source={icon}
-      style={styles.icon}
-      resizeMode="contain"
-      tintColor={focused ? "#FE8C00" : "#5D5F6D"}
-    />
-    <Text
-      style={[styles.text, focused ? styles.textFocused : styles.textUnfocused]}
-    >
-      {title}
-    </Text>
-  </View>
-);
+const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => {
+
+  const totalItems = useCartStore((state) => state.getTotalItems());
+
+  const renderBadge = () => {
+    if (title === "Cart" && totalItems > 0) {
+      return (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{totalItems}</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <View style={styles.tabIcon}>
+      <Image
+        source={icon}
+        style={styles.icon}
+        resizeMode="contain"
+        tintColor={focused ? "#FE8C00" : "#5D5F6D"}
+      />
+      <Text
+        style={[
+          styles.text,
+          focused ? styles.textFocused : styles.textUnfocused,
+        ]}
+      >
+        {title}
+      </Text>
+      {renderBadge()}
+    </View>
+  );
+};
 
 export default function TabLayout() {
-  
   return (
-    
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -69,7 +88,7 @@ export default function TabLayout() {
         options={{
           title: "Cart",
           tabBarIcon: ({ focused }) => (
-            <TabBarIcon title="Cart" icon={images.bag} focused={focused} />
+            <TabBarIcon title="Cart" icon={images.bag} focused={focused} /> 
           ),
         }}
       />
@@ -99,6 +118,7 @@ const styles = StyleSheet.create({
     minHeight: "100%",
     gap: 4,
     marginTop: 48,
+    position: "relative",
   },
   icon: {
     width: 28,
@@ -113,5 +133,21 @@ const styles = StyleSheet.create({
   },
   textUnfocused: {
     color: "#5D5F6D",
+  },
+  badge: {
+    position: "absolute",
+    top: -10,
+    right: 11,
+    backgroundColor: "#EF4444",
+    borderRadius: 9999,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: {
+    fontSize: 12,
+    fontFamily: "Quicksand-Bold",
+    color: "#FFFFFF",
   },
 });

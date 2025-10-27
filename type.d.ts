@@ -63,6 +63,7 @@ interface TabBarIconProps {
   focused: boolean;
   icon: ImageSourcePropType;
   title: string;
+  totalItems?: number;
 }
 
 interface CustomButtonProps {
@@ -120,4 +121,15 @@ interface GetMenuParams {
   icon: string;
   label: string;
   value: string;
+};
+
+
+interface FavoritesStore {
+  favorites: string[];  
+    addFavorite: (id: string) => void;
+    removeFavorite: (id: string) => void;
+    toggleFavorite: (id: string) => void;
+    isFavorite: (id: string) => boolean;
+    clearFavorites: () => void;
+    getTotalFavorites: () => number;
 };

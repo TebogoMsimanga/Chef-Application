@@ -1,4 +1,3 @@
-import AddButton from "@/components/AddButton";
 import Filter from "@/components/Filter";
 import MealCard from "@/components/MealCard";
 import SearchBar from "@/components/SearchBar";
@@ -19,7 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import CartButton from "@/components/CartButton";
+import FavButton from "@/components/FavButton";
 
 const Search = () => {
   const { category, query } = useLocalSearchParams<{
@@ -34,7 +33,7 @@ const Search = () => {
       query,
       limit: 6,
     },
-    skip: true, // Skip initial fetch
+    skip: true,
   });
 
   const { data: categories } = useAppwrite({
@@ -87,7 +86,7 @@ const Search = () => {
                 </View>
               </View>
 
-              <CartButton />
+              <FavButton />
             </View>
 
             {/* <SearchBar /> */}

@@ -139,11 +139,9 @@ export const getCategories = async () => {
       [Query.orderAsc("name")]
     );
 
-    // Process and validate category items
     const processedCategories = categories.documents.map((category) => ({
       name: category.name,
       description: category.description,
-      // Include Appwrite's system fields
       $id: category.$id,
       $createdAt: category.$createdAt,
       $updatedAt: category.$updatedAt,
@@ -156,6 +154,45 @@ export const getCategories = async () => {
     return processedCategories;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    throw new Error(error as string);
+  }
+};
+
+
+export const getFavorites = async (ids: string[]) => {
+  const validIds = ids.filter(id => typeof id === 'string' && id.trim() !== '');
+  if (validIds.length === 0) return [];
+  try {
+    const queries: string[] = [Query.equal("$id", validIds), Query.limit(100)];
+
+    const menus = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.menuTable,
+      queries
+    );
+
+    const processedMenus = menus.documents.map((menu) => ({
+      name: menu.name,
+      price: menu.price,
+      image_id: menu.image_id,
+      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menu.image_id}/view?project=${appwriteConfig.projectId}`,
+      description: menu.description,
+      calories: menu.calories,
+      protein: menu.protein,
+      rating: menu.rating,
+      type: menu.type || "default",
+      $id: menu.$id,
+      $createdAt: menu.$createdAt,
+      $updatedAt: menu.$updatedAt,
+      $permissions: menu.$permissions,
+      $collectionId: menu.$collectionId,
+      $databaseId: menu.$databaseId,
+      $sequence: menu.$sequence,
+    }));
+
+    return processedMenus;
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
     throw new Error(error as string);
   }
 };
