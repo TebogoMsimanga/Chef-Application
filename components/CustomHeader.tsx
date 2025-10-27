@@ -17,7 +17,7 @@ const CustomHeader = ({ title }: CustomHeaderProps) => {
       {title && <Text style={styles.title}>{title}</Text>}
 
       {/* Search icon */}
-      <Image source={images.search} style={styles.icon} resizeMode="contain" />
+      <Image source={images.star} style={styles.icon} resizeMode="contain" />
     </View>
   );
 };

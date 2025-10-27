@@ -25,6 +25,7 @@ import bacon from "@/assets/images/bacon.png";
 import burgerOne from "@/assets/images/burger-one.png";
 import burgerTwo from "@/assets/images/burger-two.png";
 import buritto from "@/assets/images/buritto.png";
+import cart from "@/assets/images/cart.png";
 import cheese from "@/assets/images/cheese.png";
 import coleslaw from "@/assets/images/coleslaw.png";
 import cucumber from "@/assets/images/cucumber.png";
@@ -168,6 +169,7 @@ export const images = {
     burgerOne,
     burgerTwo,
     buritto,
+    cart,
     cheese,
     coleslaw,
     cucumber,

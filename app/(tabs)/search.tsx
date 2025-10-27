@@ -87,7 +87,7 @@ const Search = () => {
                 </View>
               </View>
 
-             <CartButton />
+              <CartButton />
             </View>
 
             {/* <SearchBar /> */}
@@ -103,7 +103,43 @@ const Search = () => {
             /> */}
           </View>
         )}
-        ListEmptyComponent={() => !loading && <Text>No results</Text>}
+        ListEmptyComponent={() =>
+          !loading && (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <Image
+                source={images.emptyState}
+                resizeMode="contain"
+                style={{
+                  width: 300,
+                  height: 300,
+                }}
+              />
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  fontFamily: "Quicksand-Bold",
+                  color: "#1A1A1A",
+                }}
+              >
+                Oops!! Nothing matched your search
+              </Text>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: 16,
+                  marginTop: 10,
+                  fontWeight: "bold",
+                  fontFamily: "Quicksand-Bold",
+                  color: "#b4ababff",
+                }}
+              >
+                Try a different search term or check for typos.
+              </Text>
+            </View>
+          )
+        }
       />
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCartStore } from "@/store/cart.store";
@@ -6,11 +6,10 @@ import CustomHeader from "@/components/CustomHeader";
 import { PaymentInfoProps } from "@/type";
 import CustomButton from "@/components/CustomButton";
 import CartItem from "@/components/CartItem";
+import { StatusBar } from "expo-status-bar";
+import { images } from "@/constants";
 
-const PaymentInfo = ({
-  label,
-  value,
-}: PaymentInfoProps) => (
+const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
@@ -25,9 +24,10 @@ export default function Cart() {
 
   return (
     <SafeAreaView style={{ backgroundColor: "#fff", height: "100%" }}>
+      <StatusBar style="dark" />
       <FlatList
         data={items}
-        renderItem={({ item }) => <CartItem item={item}/>}
+        renderItem={({ item }) => <CartItem item={item} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingBottom: 112,
@@ -35,7 +35,42 @@ export default function Cart() {
           paddingTop: 20,
         }}
         ListHeaderComponent={() => <CustomHeader title="Your Cart" />}
-        ListEmptyComponent={() => <Text>Cart Empty</Text>}
+        ListEmptyComponent={() => (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Image
+              source={images.cart}
+              resizeMode="contain"
+              style={{
+                marginTop: 60,
+                marginBottom: 20,
+                width: 400,
+                height: 400
+              }}
+            />
+            <Text
+              style={{
+                textAlign: "center",
+                fontSize: 18,
+                fontWeight: "bold",
+                fontFamily: "Quicksand-Bold",
+                color: "#1A1A1A",
+              }}
+            >
+              Oops!! Your cart is empty
+            </Text>
+            <Text 
+            style={{
+                textAlign: "center",
+                fontSize: 14,
+                marginTop: 10,
+                fontWeight: "bold",
+                fontFamily: "Quicksand-Bold",
+                color: "#b4ababff",
+              }}>
+                add items to checkout
+              </Text>
+          </View>
+        )}
         ListFooterComponent={() =>
           totalItems > 0 && (
             <View style={{ gap: 20 }}>
