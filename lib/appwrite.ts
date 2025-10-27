@@ -1,4 +1,9 @@
-import { CreateUserPrams, GetMenuParams, SignInParams } from "@/type";
+import {
+  CreateMenuItemParams,
+  CreateUserPrams,
+  GetMenuParams,
+  SignInParams,
+} from "@/type";
 import * as Sentry from "@sentry/react-native";
 import {
   Account,
@@ -158,9 +163,10 @@ export const getCategories = async () => {
   }
 };
 
-
-export const getFavorites = async ({ ids }: { ids: string[] }) => {  // Updated to object param
-  const validIds = ids.filter(id => typeof id === 'string' && id.trim() !== '');
+export const getFavorites = async ({ ids }: { ids: string[] }) => {
+  const validIds = ids.filter(
+    (id) => typeof id === "string" && id.trim() !== ""
+  );
   if (validIds.length === 0) return [];
   try {
     const queries: string[] = [Query.equal("$id", validIds), Query.limit(100)];
@@ -194,5 +200,40 @@ export const getFavorites = async ({ ids }: { ids: string[] }) => {  // Updated 
   } catch (error) {
     console.error("Error fetching favorites:", error);
     throw new Error(error as string);
+  }
+};
+
+export const createMenuItem = async ({
+  name,
+  price,
+  image_id,
+  description,
+  calories,
+  protein,
+  rating,
+  type,
+  category,
+}: CreateMenuItemParams) => {
+  try {
+    const newMenuItem = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.menuTable,
+      ID.unique(),
+      {
+        name,
+        price,
+        image_id,
+        description,
+        calories,
+        protein,
+        rating,
+        type,
+        category,
+      }
+    );
+    return newMenuItem;
+  } catch (e) {
+    Sentry.captureEvent(e as any);
+    throw new Error(e as string);
   }
 };
