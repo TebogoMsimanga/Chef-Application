@@ -1,5 +1,5 @@
 import { View, Text, FlatList, Image } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react"; // Added useState for optimistic data
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFavoritesStore } from "@/store/favorite.store";
 import CustomHeader from "@/components/CustomHeader";
@@ -8,12 +8,14 @@ import { images } from "@/constants";
 import useAppwrite from "@/lib/useAppwrite";
 import { getFavorites } from "@/lib/appwrite";
 import FavoriteItem from "@/components/FavoriteItem";
+import { MenuItem } from "@/type";
 
 export default function Favorites() {
   const { favorites } = useFavoritesStore();
+  const [localData, setLocalData] = useState<MenuItem[]>([]);
 
   const {
-    data: items,
+    data: fetchedItems,
     refetch,
     loading,
   } = useAppwrite({
@@ -28,12 +30,25 @@ export default function Favorites() {
     }
   }, [favorites, refetch]);
 
+  useEffect(() => {
+    if (favorites.length === 0 && localData.length > 0) {
+      setLocalData([]);
+    }
+  }, [favorites, localData.length]);
+
   return (
     <SafeAreaView style={{ backgroundColor: "#fff", height: "100%" }}>
       <StatusBar style="dark" />
       <FlatList
-        data={items}
-        renderItem={({ item }) => <FavoriteItem item={item} />}
+        data={localData}
+        renderItem={({ item }) => (
+          <FavoriteItem
+            item={item}
+            onRemove={(id) =>
+              setLocalData((prev) => prev.filter((i) => i.$id !== id))
+            }
+          />
+        )}
         keyExtractor={(item) => item.$id}
         contentContainerStyle={{
           paddingBottom: 112,
@@ -90,5 +105,4 @@ export default function Favorites() {
     </SafeAreaView>
   );
 }
-
 

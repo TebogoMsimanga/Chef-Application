@@ -4,9 +4,14 @@ import { MenuItem } from "@/type";
 import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { images } from "@/constants";
 
-const FavoriteItem = ({ item }: { item: MenuItem }) => {
+const FavoriteItem = ({ item, onRemove }: { item: MenuItem; onRemove: (id: string) => void }) => {
   const { addItem } = useCartStore();
   const { removeFavorite } = useFavoritesStore();
+
+  const handleRemove = () => {
+    onRemove(item.$id);  // Optimistic local remove
+    removeFavorite(item.$id);  // Store update, triggers refetch
+  };
 
   return (
     <View style={styles.container}>
@@ -39,7 +44,7 @@ const FavoriteItem = ({ item }: { item: MenuItem }) => {
       </View>
 
       <TouchableOpacity
-        onPress={() => removeFavorite(item.$id)}
+        onPress={handleRemove}
         style={styles.deleteBtn}
       >
         <Image
@@ -51,7 +56,6 @@ const FavoriteItem = ({ item }: { item: MenuItem }) => {
     </View>
   );
 };
-
 export default FavoriteItem;
 
 const styles = StyleSheet.create({
