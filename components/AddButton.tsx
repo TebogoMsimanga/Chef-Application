@@ -1,22 +1,22 @@
 import { TouchableOpacity, StyleSheet, Image, View, Text } from "react-native";
 import React from "react";
 import { images } from "@/constants";
+import { router } from "expo-router";
 
-export default function AddButton() {
+const AddButton = () => {
   return (
-    <TouchableOpacity style={styles.cartBtn} onPress={() => {}}>
+    <TouchableOpacity style={styles.cartBtn} onPress={() => router.push("/edit")}>
       <Image
         source={images.plus}
         style={styles.cartIcon}
         resizeMode="contain"
       />
 
-      {/* <View style={styles.cartIcon}>
-        <Text>Add to menu</Text>
-      </View> */}
     </TouchableOpacity>
   );
 }
+
+export default AddButton;
 
 const styles = StyleSheet.create({
   cartBtn: {
