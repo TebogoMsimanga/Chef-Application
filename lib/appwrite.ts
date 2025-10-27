@@ -159,7 +159,7 @@ export const getCategories = async () => {
 };
 
 
-export const getFavorites = async (ids: string[]) => {
+export const getFavorites = async ({ ids }: { ids: string[] }) => {  // Updated to object param
   const validIds = ids.filter(id => typeof id === 'string' && id.trim() !== '');
   if (validIds.length === 0) return [];
   try {
