@@ -66,7 +66,7 @@ export default function Favorites() {
               }}
             >
               <Image
-                source={images.emptyState}
+                source={images.fav}
                 resizeMode="contain"
                 style={{
                   marginTop: 60,

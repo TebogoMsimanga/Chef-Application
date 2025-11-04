@@ -9,8 +9,8 @@ const FavoriteItem = ({ item, onRemove }: { item: MenuItem; onRemove: (id: strin
   const { removeFavorite } = useFavoritesStore();
 
   const handleRemove = () => {
-    onRemove(item.$id);  // Optimistic local remove
-    removeFavorite(item.$id);  // Store update, triggers refetch
+    onRemove(item.$id);  
+    removeFavorite(item.$id);  
   };
 
   return (

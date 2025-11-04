@@ -23,6 +23,7 @@ import avatar from "@/assets/images/avatar.png";
 import avocado from "@/assets/images/avocado.png";
 import bacon from "@/assets/images/bacon.png";
 import burgerOne from "@/assets/images/burger-one.png";
+import dots from "@/assets/images/dots.png";
 import burgerTwo from "@/assets/images/burger-two.png";
 import buritto from "@/assets/images/buritto.png";
 import cart from "@/assets/images/cart.png";
@@ -32,6 +33,7 @@ import cucumber from "@/assets/images/cucumber.png";
 import emptyState from "@/assets/images/empty-state.png";
 import eye from "@/assets/images/eye.png";
 import fries from "@/assets/images/fries.png";
+import fav from "@/assets/images/fav.png";
 import loginGraphic from "@/assets/images/login-graphic.png";
 import logo from "@/assets/images/logo.png";
 import mozarellaSticks from "@/assets/images/mozarella-sticks.png";
@@ -177,6 +179,7 @@ export const images = {
     emptyState,
     eye,
     fries,
+    fav,
     loginGraphic,
     logo,
     mozarellaSticks,
@@ -191,6 +194,7 @@ export const images = {
     arrowDown,
     arrowRight,
     bag,
+    dots,
     check,
     clock,
     dollar,

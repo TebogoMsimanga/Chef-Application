@@ -46,7 +46,8 @@
           "project": "christoffel_react-native_menu_app",
           "organization": "tbg-kx"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
