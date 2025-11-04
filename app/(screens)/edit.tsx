@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import CreateMenuItem from '@/components/CreateMenuItem';  
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
+import React, { useState } from "react";
+import { StyleSheet } from "react-native";
+import CreateMenuItem from "@/components/CreateMenuItem";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-const Edit = () => {  
+const Edit = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-        <CreateMenuItem onSuccess={() => setRefreshKey(prev => prev + 1)} />
+      <CreateMenuItem
+        key={refreshKey}
+        onSuccess={() => setRefreshKey((prev) => prev + 1)}
+      />
     </SafeAreaView>
   );
 };
@@ -18,7 +21,7 @@ const Edit = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   formContainer: {
     padding: 20,

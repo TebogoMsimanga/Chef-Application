@@ -8,15 +8,20 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomHeader from "./CustomHeader";
 import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
 import { CreateMenuItemParams, CreateMenuItemProps } from "@/type";
+import * as ImagePicker from "expo-image-picker";
+import { createMenuItem, storage, appwriteConfig } from "@/lib/appwrite"; 
+import { ID } from "react-native-appwrite";
 
 const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<CreateMenuItemParams>({
@@ -38,13 +43,88 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Denied",
+        "We need photo library access to select images."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedAsset(result.assets[0]);
+    }
+  };
+
   const handleSubmit = async () => {
-    // TODO: Implement submit logic
+    if (isSubmitting) return;
+
+    // Basic validation
+    if (!formData.name || formData.price <= 0) {
+      Alert.alert("Error", "Name and a valid price are required.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      let imageId = "";
+
+      if (selectedAsset) {
+        const file = {
+          uri: selectedAsset.uri,
+          name: selectedAsset.fileName || "menu-image.jpg",
+          type: selectedAsset.type || "image/jpeg", // Fallback to jpeg
+          size: selectedAsset.fileSize || 0,
+        };
+
+        const uploadedFile = await storage.createFile(
+          appwriteConfig.bucketId,
+          ID.unique(),
+          file
+        );
+
+        imageId = uploadedFile.$id;
+      }
+
+      const updatedFormData = { ...formData, image_id: imageId };
+      await createMenuItem(updatedFormData);
+
+      // Reset form
+      setFormData({
+        name: "",
+        price: 0,
+        image_id: "",
+        description: "",
+        calories: 0,
+        protein: 0,
+        rating: 0,
+        type: "",
+        category: "",
+      });
+      setSelectedAsset(null);
+
+      onSuccess?.();
+      Alert.alert("Success", "Menu item added!");
+    } catch (error: any) {
+      console.error("Submit error:", error);
+      Alert.alert("Error", error.message || "Failed to add menu item.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Keyboard handling for iOS/Android */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -58,7 +138,6 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
           <View style={styles.card}>
             <CustomHeader title="Edit Menu Item" />
 
-            {/* Inputs */}
             <View style={styles.inputsContainer}>
               <CustomInput
                 label="Name"
@@ -92,7 +171,7 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
                 placeholder="Brief description..."
                 value={formData.description}
                 onChangeText={(text) => handleInputChange("description", text)}
-                multiline
+                multiline // Now typed properly
               />
               <CustomInput
                 label="Calories"
@@ -123,11 +202,10 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
               />
             </View>
 
-            {/* Image Picker */}
-            <TouchableOpacity style={styles.imagePicker} onPress={() => {}}>
-              {selectedImage ? (
+            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+              {selectedAsset ? (
                 <Image
-                  source={{ uri: selectedImage }}
+                  source={{ uri: selectedAsset.uri }}
                   style={styles.previewImage}
                 />
               ) : (
@@ -139,7 +217,6 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
               )}
             </TouchableOpacity>
 
-            {/* Submit Button */}
             <CustomButton
               title={isSubmitting ? "Adding..." : "Add Menu Item"}
               onPress={handleSubmit}

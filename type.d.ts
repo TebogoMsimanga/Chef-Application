@@ -86,6 +86,7 @@ interface CustomInputProps {
   label: string;
   secureTextEntry?: boolean;
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+  multiline?: boolean;
 }
 
 interface ProfileFieldProps {
@@ -98,13 +99,6 @@ interface CreateUserPrams {
   email: string;
   password: string;
   name: string;
-}
-
-interface PaymentInfoProps {
-    label: string;
-    value: string;
-    labelStyle?: string;
-    valueStyle?: string;
 }
 
 interface SignInParams {
