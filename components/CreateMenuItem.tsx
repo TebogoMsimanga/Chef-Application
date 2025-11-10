@@ -116,7 +116,7 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
       onSuccess?.();
       Alert.alert("Success", "Menu item added!");
     } catch (error: any) {
-      console.error("Submit error:", error);
+      console.error("Submit error details:", JSON.stringify(error, null, 2)); // Enhanced logging
       Alert.alert("Error", error.message || "Failed to add menu item.");
     } finally {
       setIsSubmitting(false);

@@ -60,6 +60,8 @@ export default function Index() {
                     resizeMode="contain"
                     tintColor="#EBECFF"
                   />
+                  {/* Meal Count */}
+                  <Text>24 Meals</Text>
                 </View>
               </Pressable>
             </View>

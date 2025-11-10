@@ -28,6 +28,8 @@ export const appwriteConfig = {
   menuCustomizationTable: "menu_customizations",
 };
 
+console.log("Appwrite Config:", appwriteConfig); // Add this line for logging
+
 export const client = new Client();
 
 client
