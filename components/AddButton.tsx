@@ -1,39 +1,30 @@
-import {Image, StyleSheet, TouchableOpacity} from "react-native";
+import {StyleSheet} from "react-native";
 import React from "react";
-import {images} from "@/constants";
 import {router} from "expo-router";
+import CustomButton from "./CustomButton";
+import {Ionicons} from "@expo/vector-icons";
 
 const AddButton = () => {
   return (
-    <TouchableOpacity style={styles.cartBtn} onPress={() => router.push("/edit")}>
-      <Image
-        source={images.plus}
-        style={styles.cartIcon}
-        resizeMode="contain"
-      />
-
-    </TouchableOpacity>
+    <CustomButton
+      title="Edit Menu"
+      onPress={() => router.push("/edit")}
+      leftIcon={<Ionicons name="add" size={20} color="#fff" style={styles.icon} />}
+      style={styles.button}
+    />
   );
 }
 
 export default AddButton;
 
 const styles = StyleSheet.create({
-  cartBtn: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#FE8C00",
-    backgroundColor: "#fff",
+  button: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    width: "auto",
+    minWidth: 120,
   },
-  cartIcon: {
-    width: 20,
-    height: 20,
-    position: "relative",
-    top: 0,
-    left: 0,
+  icon: {
+    marginRight: 6,
   },
 });

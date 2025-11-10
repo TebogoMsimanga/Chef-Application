@@ -123,23 +123,36 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
     <TouchableOpacity
       style={styles.container}
       onPress={handlePress}
+      activeOpacity={0.8}
     >
-      <Image
-        source={{ uri: item.image || images.placeholder }}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={toggleFavorite}
-      >
-        <Ionicons
-          name={favorite ? "heart" : "heart-outline"}
-          size={24}
-          color={favorite ? "#EF4444" : "#fff"}
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: item.image || images.placeholder }}
+          style={styles.image}
+          resizeMode="cover"
         />
-      </TouchableOpacity>
+        
+        {/* Favorite Button */}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            toggleFavorite();
+          }}
+        >
+          <Ionicons
+            name={favorite ? "heart" : "heart-outline"}
+            size={20}
+            color={favorite ? "#EF4444" : "#fff"}
+          />
+        </TouchableOpacity>
+
+        {/* Rating Badge */}
+        <View style={styles.ratingBadge}>
+          <Ionicons name="star" size={14} color="#FFA500" />
+          <Text style={styles.ratingBadgeText}>{item.rating?.toFixed(1) || "4.5"}</Text>
+        </View>
+      </View>
 
       <View style={styles.details}>
         <Text style={styles.name} numberOfLines={1}>
@@ -148,12 +161,40 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
         <Text style={styles.description} numberOfLines={2}>
           {item.description}
         </Text>
-        <View style={styles.footer}>
-          <Text style={styles.price}>R {item.price?.toFixed(2)}</Text>
-          <View style={styles.rating}>
-            <Ionicons name="star" size={16} color="#FFA500" />
-            <Text style={styles.ratingText}>{item.rating || "4.5"}</Text>
+        
+        {/* Nutrition Info */}
+        {(item.calories || item.protein) && (
+          <View style={styles.nutritionInfo}>
+            {item.calories && (
+              <View style={styles.nutritionItem}>
+                <Ionicons name="flame-outline" size={12} color="#666" />
+                <Text style={styles.nutritionText}>{item.calories} cal</Text>
+              </View>
+            )}
+            {item.protein && (
+              <View style={styles.nutritionItem}>
+                <Ionicons name="barbell-outline" size={12} color="#666" />
+                <Text style={styles.nutritionText}>{item.protein}g</Text>
+              </View>
+            )}
           </View>
+        )}
+
+        <View style={styles.footer}>
+          <View style={styles.priceContainer}>
+            <Text style={styles.priceLabel}>Price</Text>
+            <Text style={styles.price}>R {item.price?.toFixed(2)}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              // TODO: Add to cart functionality
+              console.log("[MealCard] Add to cart:", item.id);
+            }}
+          >
+            <Ionicons name="add" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -164,28 +205,50 @@ const styles = StyleSheet.create({
   container: {
     width: 180,
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     marginRight: 12,
     marginBottom: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
+    overflow: "hidden",
+  },
+  imageContainer: {
+    position: "relative",
+    width: "100%",
+    height: 140,
   },
   image: {
     width: "100%",
-    height: 120,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    height: "100%",
   },
   favoriteButton: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.4)",
     borderRadius: 20,
-    padding: 6,
+    padding: 8,
+    zIndex: 1,
+  },
+  ratingBadge: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  ratingBadgeText: {
+    fontSize: 12,
+    fontFamily: "Quicksand-Bold",
+    color: "#1A1A1A",
   },
   details: {
     padding: 12,
@@ -194,34 +257,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Quicksand-Bold",
     color: "#1A1A1A",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   description: {
     fontSize: 12,
     fontFamily: "Quicksand-Medium",
     color: "#666",
     marginBottom: 8,
-    height: 32,
+    lineHeight: 16,
+    minHeight: 32,
+  },
+  nutritionInfo: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  nutritionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  nutritionText: {
+    fontSize: 11,
+    fontFamily: "Quicksand-Medium",
+    color: "#666",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 4,
+  },
+  priceContainer: {
+    flex: 1,
+  },
+  priceLabel: {
+    fontSize: 10,
+    fontFamily: "Quicksand-Medium",
+    color: "#999",
+    marginBottom: 2,
   },
   price: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Quicksand-Bold",
     color: "#FE8C00",
   },
-  rating: {
-    flexDirection: "row",
+  addButton: {
+    backgroundColor: "#FE8C00",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontFamily: "Quicksand-SemiBold",
-    color: "#1A1A1A",
+    shadowColor: "#FE8C00",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
 
