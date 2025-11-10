@@ -21,8 +21,9 @@ import useAuthStore from "@/store/auth.store";
 import { Ionicons } from "@expo/vector-icons";
 import * as Sentry from "@sentry/react-native";
 import { router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -33,6 +34,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -45,17 +47,19 @@ export default function Index() {
   const scrollViewRef = useRef<ScrollView>(null);
   const sliderScrollRef = useRef<FlatList>(null);
   const [currentSliderIndex, setCurrentSliderIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const [categoryStats, setCategoryStats] = useState<
     Array<{ name: string; count: number; avgPrice: number }>
   >([]);
 
   console.log("[Home] Rendering home screen");
 
-  // Fetch all menus
+  // Fetch all menus with refetch capability
   const {
     data: allMenus,
     loading: menusLoading,
     error: menusError,
+    refetch: refetchMenus,
   } = useSupabase({
     fn: getMenu,
     params: { category: "", query: "", limit: 10000 },
@@ -66,10 +70,57 @@ export default function Index() {
     data: categoriesData,
     loading: categoriesLoading,
     error: categoriesError,
+    refetch: refetchCategories,
   } = useSupabase({
     fn: getCategories,
     showErrorAlert: false,
   });
+
+  // Refetch data when screen comes into focus (with debounce to prevent excessive calls)
+  const lastRefetchTime = useRef<number>(0);
+  const hasInitialRefetch = useRef<boolean>(false);
+  const isRefetching = useRef<boolean>(false);
+  const hasInitialLoad = useRef<boolean>(false);
+  const REFETCH_COOLDOWN = 5000; // 5 seconds cooldown between refetches
+
+  useFocusEffect(
+    useCallback(() => {
+      const now = Date.now();
+      
+      // Skip if already refetching
+      if (isRefetching.current) {
+        console.log("[Home] Already refetching, skipping...");
+        return;
+      }
+      
+      // Skip if cooldown is active
+      if (now - lastRefetchTime.current < REFETCH_COOLDOWN) {
+        console.log("[Home] Skipping refetch (cooldown active)");
+        return;
+      }
+      
+      // Only refetch if data has been loaded at least once
+      if (!hasInitialRefetch.current) {
+        console.log("[Home] Waiting for initial load...");
+        // Mark as initial refetch done after a delay
+        setTimeout(() => {
+          hasInitialRefetch.current = true;
+        }, 1000);
+        return;
+      }
+      
+      console.log("[Home] Screen focused, refetching data...");
+      lastRefetchTime.current = now;
+      isRefetching.current = true;
+      
+      Promise.all([
+        refetchMenus(),
+        refetchCategories(),
+      ]).finally(() => {
+        isRefetching.current = false;
+      });
+    }, [refetchMenus, refetchCategories])
+  );
 
   // Calculate statistics
   useEffect(() => {
@@ -116,6 +167,20 @@ export default function Index() {
     return allMenus.filter((item: any) => item.image).slice(0, 5);
   }, [allMenus]);
 
+  // Reset slider index when featured meals change
+  useEffect(() => {
+    if (featuredMeals && featuredMeals.length > 0) {
+      setCurrentSliderIndex(0);
+      // Reset slider position to first item
+      setTimeout(() => {
+        sliderScrollRef.current?.scrollToOffset({
+          offset: 0,
+          animated: false,
+        });
+      }, 100);
+    }
+  }, [featuredMeals]);
+
   // Auto-scroll slider
   const [isUserScrolling, setIsUserScrolling] = useState(false);
 
@@ -139,8 +204,32 @@ export default function Index() {
     return () => clearInterval(interval);
   }, [featuredMeals, isUserScrolling]);
 
-  // Total menu items count
-  const totalMenuItems = allMenus?.length || 0;
+  // Total menu items count (recalculated when data changes)
+  const totalMenuItems = useMemo(() => {
+    return allMenus?.length || 0;
+  }, [allMenus]);
+
+  /**
+   * Handle pull to refresh
+   */
+  const onRefresh = useCallback(async () => {
+    console.log("[Home] Pull to refresh triggered");
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchMenus(),
+        refetchCategories(),
+      ]);
+      console.log("[Home] Data refreshed successfully");
+    } catch (error) {
+      console.error("[Home] Error refreshing data:", error);
+      Sentry.captureException(error as Error, {
+        tags: { component: "Home", action: "onRefresh" },
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchMenus, refetchCategories]);
 
   // Handle errors
   useEffect(() => {
@@ -158,9 +247,16 @@ export default function Index() {
     }
   }, [menusError, categoriesError]);
 
-  // Show loading state
-  if (menusLoading || categoriesLoading) {
-    console.log("[Home] Loading data...");
+  // Track initial load completion
+  useEffect(() => {
+    if (!menusLoading && !categoriesLoading && (allMenus || categoriesData)) {
+      hasInitialLoad.current = true;
+    }
+  }, [menusLoading, categoriesLoading, allMenus, categoriesData]);
+
+  // Show loading state only on initial load
+  if ((menusLoading || categoriesLoading) && !hasInitialLoad.current) {
+    console.log("[Home] Initial loading data...");
     return (
       <SafeAreaView
         style={{
@@ -291,6 +387,14 @@ export default function Index() {
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#FE8C00"]}
+            tintColor="#FE8C00"
+          />
+        }
       >
         {/* Header */}
         <View style={styles.header}>

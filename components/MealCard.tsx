@@ -10,7 +10,7 @@
  * @component
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
 import { images } from "@/constants";
 import { router } from "expo-router";
@@ -50,12 +50,15 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
     setFavorite(isFavoriteInStore);
   }, [isFavoriteInStore]);
 
-  // Check if item is favorite on mount and sync with store
+  // Check if item is favorite on mount and sync with store (only once per item)
+  const hasCheckedFavorite = useRef<string | null>(null);
   useEffect(() => {
-    if (user?.id && item?.id) {
+    // Only check if we haven't checked this specific item yet
+    if (user?.id && item?.id && hasCheckedFavorite.current !== item.id) {
+      hasCheckedFavorite.current = item.id;
       checkFavoriteStatus();
     }
-  }, [user, item]);
+  }, [user?.id, item?.id]);
 
   /**
    * Check if item is in user's favorites
@@ -63,6 +66,13 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
   const checkFavoriteStatus = async () => {
     try {
       if (!user?.id || !item?.id) return;
+
+      // First check the store - if already checked, skip API call
+      const storeIsFavorite = useFavoritesStore.getState().isFavorite(item.id);
+      if (storeIsFavorite) {
+        setFavorite(true);
+        return;
+      }
 
       console.log("[MealCard] Checking favorite status for item:", item.id);
       const favorites = await getFavorites(user.id);
@@ -201,28 +211,30 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
         {/* Rating Badge */}
         <View style={styles.ratingBadge}>
           <Ionicons name="star" size={14} color="#FFA500" />
-          <Text style={styles.ratingBadgeText}>{item.rating?.toFixed(1) || "4.5"}</Text>
+          <Text style={styles.ratingBadgeText}>
+            {item.rating != null ? item.rating.toFixed(1) : "4.5"}
+          </Text>
         </View>
       </View>
 
       <View style={styles.details}>
         <Text style={styles.name} numberOfLines={1}>
-          {item.name}
+          {item?.name ? String(item.name) : "Unnamed Item"}
         </Text>
         <Text style={styles.description} numberOfLines={2}>
-          {item.description}
+          {item?.description ? String(item.description) : "No description available"}
         </Text>
         
         {/* Nutrition Info */}
-        {(item.calories || item.protein) && (
+        {(item.calories != null || item.protein != null) && (
           <View style={styles.nutritionInfo}>
-            {item.calories && (
+            {item.calories != null && (
               <View style={styles.nutritionItem}>
                 <Ionicons name="flame-outline" size={12} color="#666" />
                 <Text style={styles.nutritionText}>{item.calories} cal</Text>
               </View>
             )}
-            {item.protein && (
+            {item.protein != null && (
               <View style={styles.nutritionItem}>
                 <Ionicons name="barbell-outline" size={12} color="#666" />
                 <Text style={styles.nutritionText}>{item.protein}g</Text>
@@ -234,7 +246,7 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
         <View style={styles.footer}>
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Price</Text>
-            <Text style={styles.price}>R {item.price?.toFixed(2)}</Text>
+            <Text style={styles.price}>R {item.price != null ? item.price.toFixed(2) : "0.00"}</Text>
           </View>
           <TouchableOpacity
             style={styles.addButton}
