@@ -1,9 +1,7 @@
 import AddButton from "@/components/AddButton";
-import SearchBar from "@/components/SearchBar";
 import { images, menu } from "@/constants";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Button,
   FlatList,
   Image,
   Pressable,
@@ -13,14 +11,67 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Sentry from "@sentry/react-native"
 import useAuthStore from "@/store/auth.store";
 import { StatusBar } from "expo-status-bar";
+import { getCategories, getMenu } from "@/lib/appwrite";
+import useAppwrite from "@/lib/useAppwrite";
 
 export default function Index() {
   const { user } = useAuthStore();
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
+    {}
+  );
 
-  console.log("AuthStore", JSON.stringify(user, null, 2))
+  console.log("AuthStore", JSON.stringify(user, null, 2));
+
+  // Fetch all menus using useAppwrite (no category, high limit to get everything)
+  const {
+    data: allMenus,
+    loading,
+    error,
+  } = useAppwrite({
+    fn: getMenu,
+    params: { category: "", query: "", limit: 10000 }, // Fetch all, adjust limit as needed
+  });
+
+  const { data: categoriesData } = useAppwrite({
+    fn: getCategories,
+  });
+
+  console.log("allMenus data:", JSON.stringify(allMenus, null, 2));
+  console.log("loading state:", loading);
+
+  useEffect(() => {
+    if (allMenus && categoriesData && !loading) {
+      const categoryIdToNameMap: Record<string, string> = {};
+      categoriesData.forEach((cat) => {
+        categoryIdToNameMap[cat.$id] = cat.name.toUpperCase();
+      });
+
+      const counts: Record<string, number> = {};
+
+      allMenus.forEach((m) => {
+        const categoryName = categoryIdToNameMap[m.category];
+        if (categoryName) {
+          counts[categoryName] = (counts[categoryName] || 0) + 1;
+        }
+      });
+
+      console.log("Raw counts from DB categories (using names):", JSON.stringify(counts, null, 2));
+
+      const finalCategoryCounts = menu.reduce((acc, item) => {
+        acc[item.title] = counts[item.title] || 0;
+        return acc;
+      }, {} as Record<string, number>);
+
+      console.log("Final categoryCounts for UI:", JSON.stringify(finalCategoryCounts, null, 2));
+      setCategoryCounts(finalCategoryCounts);
+    }
+  }, [allMenus, loading, categoriesData]);
+
+  if (error) {
+    console.error("Error fetching menus:", error);
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -60,8 +111,8 @@ export default function Index() {
                     resizeMode="contain"
                     tintColor="#EBECFF"
                   />
-                  {/* Meal Count */}
-                  <Text>24 Meals</Text>
+                  {/* Meal Count - Dynamic from DB */}
+                  <Text>{categoryCounts[item.title] || 0} Meals</Text>
                 </View>
               </Pressable>
             </View>
@@ -72,14 +123,13 @@ export default function Index() {
           <View>
             <View style={styles.userInfo}>
               <Image
-                source={images.logo}
+                source={{ uri: user?.avatar || images.logo }}
                 style={styles.logo}
                 resizeMode="contain"
-                tintColor="#EBECFF"
               />
               <View style={styles.userInfoTextContainer}>
                 <TouchableOpacity style={styles.userNameRow}>
-                  <Text style={styles.userName}>Christoffel</Text>
+                  <Text style={styles.userName}>{user?.name || "Guest"}</Text>
                   <Image
                     source={images.arrowDown}
                     style={styles.arrowDownIcon}

@@ -28,8 +28,6 @@ export const appwriteConfig = {
   menuCustomizationTable: "menu_customizations",
 };
 
-console.log("Appwrite Config:", appwriteConfig); // Add this line for logging
-
 export const client = new Client();
 
 client
@@ -98,9 +96,20 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const getMenu = async ({ category, query }: GetMenuParams) => {
+export const getMenu = async ({
+  category = "",
+  query = "",
+  limit = 20,
+}: {
+  category?: string;
+  query?: string;
+  limit?: number;
+}) => {
   try {
-    const queries: string[] = [Query.orderDesc("$createdAt"), Query.limit(20)];
+    const queries: string[] = [
+      Query.orderDesc("$createdAt"),
+      Query.limit(limit),
+    ];
 
     if (category) queries.push(Query.equal("category", category));
     if (query) queries.push(Query.search("name", query));
@@ -110,6 +119,8 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
       appwriteConfig.menuTable,
       queries
     );
+
+    console.log("Raw menus from Appwrite DB:", JSON.stringify(menus.documents, null, 2));
 
     // Process and validate menu items
     const processedMenus = menus.documents.map((menu) => ({
@@ -122,6 +133,7 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
       protein: menu.protein,
       rating: menu.rating,
       type: menu.type || "default",
+      category: menu.category,
       $id: menu.$id,
       $createdAt: menu.$createdAt,
       $updatedAt: menu.$updatedAt,
