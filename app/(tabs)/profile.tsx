@@ -16,6 +16,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {Ionicons} from "@expo/vector-icons";
 import {InfoItemProps} from "@/type";
 import useAuthStore from "@/store/auth.store";
+import { getUserInitials, getAvatarColor } from "@/lib/utils";
 import * as Sentry from "@sentry/react-native";
 import {StatusBar} from "expo-status-bar";
 import {images} from "@/constants";
@@ -152,11 +153,31 @@ export default function Profile() {
         keyExtractor={(_, index) => index.toString()}
         ListHeaderComponent={() => (
           <View style={styles.imageContainer}>
-            <Image
-              source={user.avatar ? { uri: user.avatar } : images.avatar}
-              style={styles.profileImage}
-              defaultSource={images.avatar}
-            />
+            {user.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                style={styles.profileImage}
+                defaultSource={images.avatar}
+              />
+            ) : user.name ? (
+              <View
+                style={[
+                  styles.profileImage,
+                  styles.profileImageInitials,
+                  { backgroundColor: getAvatarColor(user.name) },
+                ]}
+              >
+                <Text style={styles.profileImageInitialsText}>
+                  {getUserInitials(user.name)}
+                </Text>
+              </View>
+            ) : (
+              <Image
+                source={images.avatar}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            )}
             <TouchableOpacity
               style={styles.editIcon}
               onPress={() => {
@@ -223,8 +244,17 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    borderWidth: 1,
-    borderColor: "#f7931a",
+    borderWidth: 3,
+    borderColor: "#FE8C00",
+  },
+  profileImageInitials: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileImageInitialsText: {
+    fontSize: 36,
+    fontFamily: "Quicksand-Bold",
+    color: "#fff",
   },
   editIcon: {
     position: "absolute",

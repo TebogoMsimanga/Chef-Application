@@ -522,6 +522,161 @@ export async function deleteMenuItem(id: string) {
   }
 }
 
+/**
+ * Upload image to Supabase storage
+ * 
+ * Works with React Native by reading the file and converting it to a format
+ * that Supabase storage can accept using FormData.
+ * 
+ * @param {string} uri - Local file URI (e.g., file:// or content://)
+ * @param {string} fileName - Name for the file in storage
+ * @param {string} bucket - Storage bucket name (default: 'menu-images')
+ * @returns {Promise<string>} Public URL of uploaded image
+ */
+export async function uploadImage(
+  uri: string,
+  fileName: string,
+  bucket: string = 'menu-images'
+): Promise<string> {
+  try {
+    console.log('[Supabase] Uploading image:', fileName, 'to bucket:', bucket);
+    console.log('[Supabase] Image URI:', uri);
+    
+    // Generate unique filename
+    const fileExt = fileName.split('.').pop() || 'jpg';
+    const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `menu-items/${uniqueFileName}`;
+    
+    console.log('[Supabase] Uploading to path:', filePath);
+    
+    // For React Native, we need to read the file and convert it properly
+    // Read file as base64 first, then convert to blob
+    const response = await fetch(uri);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    
+    // For React Native, Supabase storage works best with ArrayBuffer
+    // Read the file as ArrayBuffer directly
+    const arrayBuffer = await response.arrayBuffer();
+    const contentType = `image/${fileExt === 'png' ? 'png' : fileExt === 'webp' ? 'webp' : 'jpeg'}`;
+    
+    console.log('[Supabase] File array buffer created, type:', contentType, 'size:', arrayBuffer.byteLength);
+    
+    // Upload to Supabase storage using ArrayBuffer
+    // Supabase storage accepts File, Blob, ArrayBuffer, or FormData in React Native
+    // ArrayBuffer is the most reliable for React Native
+    const { data, error } = await getSupabase()
+      .storage
+      .from(bucket)
+      .upload(filePath, arrayBuffer, {
+        contentType: contentType,
+        upsert: false,
+      });
+    
+    if (error) {
+      console.error('[Supabase] Upload image error:', error.message);
+      Sentry.captureException(error, {
+        tags: { component: 'Supabase', action: 'uploadImage' },
+        extra: { fileName, bucket, errorMessage: error?.message },
+      });
+      throw error;
+    }
+    
+    console.log('[Supabase] File uploaded successfully, getting public URL...');
+    
+    // Get public URL
+    const { data: urlData } = getSupabase()
+      .storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+    
+    const publicUrl = urlData.publicUrl;
+    console.log('[Supabase] Image uploaded successfully:', publicUrl);
+    
+    return publicUrl;
+  } catch (error: any) {
+    console.error('[Supabase] Upload image failed:', error);
+    console.error('[Supabase] Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+    });
+    
+    Sentry.captureException(error, {
+      tags: { component: 'Supabase', action: 'uploadImage' },
+      extra: { 
+        fileName, 
+        bucket, 
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+        errorName: error?.name,
+      },
+    });
+    throw error;
+  }
+}
+
+/**
+ * Initialize categories if they don't exist
+ * Creates default categories for the application
+ * 
+ * @returns {Promise<void>}
+ */
+export async function initializeCategories() {
+  try {
+    console.log('[Supabase] Initializing categories...');
+    
+    const defaultCategories = [
+      { name: 'Breakfast', description: 'Morning meals and breakfast items' },
+      { name: 'Starters', description: 'Appetizers and starters' },
+      { name: 'Lunch', description: 'Lunch meals and dishes' },
+      { name: 'Supper', description: 'Evening meals' },
+      { name: 'Meals', description: 'Main meals and dishes' },
+    ];
+    
+    const supabase = getSupabase();
+    
+    // Check existing categories
+    const { data: existingCategories } = await supabase
+      .from('categories')
+      .select('name');
+    
+    const existingNames = new Set(existingCategories?.map(c => c.name.toLowerCase()) || []);
+    
+    // Insert only new categories
+    const newCategories = defaultCategories.filter(
+      cat => !existingNames.has(cat.name.toLowerCase())
+    );
+    
+    if (newCategories.length > 0) {
+      const { error } = await supabase
+        .from('categories')
+        .insert(newCategories);
+      
+      if (error) {
+        console.error('[Supabase] Initialize categories error:', error.message);
+        Sentry.captureException(error, {
+          tags: { component: 'Supabase', action: 'initializeCategories' },
+        });
+        throw error;
+      }
+      
+      console.log('[Supabase] Created', newCategories.length, 'new categories');
+    } else {
+      console.log('[Supabase] All categories already exist');
+    }
+  } catch (error: any) {
+    console.error('[Supabase] Initialize categories failed:', error);
+    Sentry.captureException(error, {
+      tags: { component: 'Supabase', action: 'initializeCategories' },
+      extra: { errorMessage: error?.message },
+    });
+    throw error;
+  }
+}
+
 // ============================================================================
 // FAVORITES FUNCTIONS
 // ============================================================================

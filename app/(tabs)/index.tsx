@@ -11,6 +11,7 @@ import AddButton from "@/components/AddButton";
 import { images, menu } from "@/constants";
 import { getCategories, getMenu } from "@/lib/supabase";
 import useSupabase from "@/lib/useSupabase";
+import { getUserInitials, getAvatarColor } from "@/lib/utils";
 import useAuthStore from "@/store/auth.store";
 import * as Sentry from "@sentry/react-native";
 import { router } from "expo-router";
@@ -240,11 +241,32 @@ export default function Index() {
         ListHeaderComponent={() => (
           <View>
             <View style={styles.userInfo}>
-              <Image
-                source={{ uri: user?.avatar || images.logo }}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              {user?.avatar ? (
+                <Image
+                  source={{ uri: user.avatar }}
+                  style={styles.avatar}
+                  resizeMode="cover"
+                  defaultSource={images.avatar}
+                />
+              ) : user?.name ? (
+                <View
+                  style={[
+                    styles.avatar,
+                    styles.avatarInitials,
+                    { backgroundColor: getAvatarColor(user.name) },
+                  ]}
+                >
+                  <Text style={styles.avatarInitialsText}>
+                    {getUserInitials(user.name)}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  source={images.avatar}
+                  style={styles.avatar}
+                  resizeMode="cover"
+                />
+              )}
               <View style={styles.userInfoTextContainer}>
                 <TouchableOpacity style={styles.userNameRow}>
                   <Text style={styles.userName}>{user?.name || "Guest"}</Text>
@@ -274,10 +296,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  logo: {
-    width: 45,
-    height: 45,
-    borderRadius: 9999,
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#FE8C00",
+  },
+  avatarInitials: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarInitialsText: {
+    fontSize: 18,
+    fontFamily: "Quicksand-Bold",
+    color: "#fff",
   },
   userInfoTextContainer: {
     flexDirection: "column",
