@@ -116,14 +116,18 @@ export default function Index() {
                   ]}
                 >
                   <Text style={styles.homeText}>{item.title}</Text>
-                  <Image
-                    source={images.arrowRight}
-                    style={{ width: 40, height: 40 }}
-                    resizeMode="contain"
-                    tintColor="#EBECFF"
-                  />
+                  
                   {/* Meal Count - Dynamic from DB */}
-                  <Text>{categoryCounts[item.title] || 0} Meals</Text>
+                  <Text style={{
+                    backgroundColor: "#FE8C00",
+                    paddingHorizontal: 10,
+                    paddingVertical: 10,
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    borderRadius: 9999,
+                    marginTop: 5,
+                    color: "#fff"
+                  }}>{categoryCounts[item.title] || 0} Meals</Text>
                 </View>
               </Pressable>
             </View>
@@ -170,6 +174,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
+    borderRadius: 9999
   },
   userInfoTextContainer: {
     flexDirection: "column",

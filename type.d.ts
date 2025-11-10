@@ -124,6 +124,7 @@ interface CreateMenuItemParams {
   name: string;
   price: number;
   image_id: string;
+  image_url: string;
   description: string;
   calories: number;
   protein: number;

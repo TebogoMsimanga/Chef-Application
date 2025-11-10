@@ -79,25 +79,25 @@ export const menu = [
         id: 1,
         title: "MEALS",
         image: burgerOne,
-        color: "#0016FF",
+        color: "#eb660eff",
     },
     {
         id: 2,
         title: "BREAKFAST",
         image: burgerTwo,
-        color: "#4757FF",
+        color: "#d88913ff",
     },
     {
         id: 3,
         title: "LUNCH",
         image: pizzaOne,
-        color: "#000C8F",
+        color: "#eb522cff",
     },
     {
         id: 4,
         title: "DINNER",
         image: buritto,
-        color: "#000FB8",
+        color: "#d37304ff",
     },
 ];
 

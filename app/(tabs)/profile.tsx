@@ -39,18 +39,18 @@ export default function Profile() {
     {
       icon: "person-outline",
       label: "Full Name",
-      value: user.name || "Adrian Hajdin",
+      value: user.name,
     },
     {
       icon: "mail-outline",
       label: "Email",
-      value: user.email || "adrian@jsmastery.com",
+      value: user.email,
     },
-    { icon: "call-outline", label: "Phone number", value: "+1 555 123 4567" },
+    { icon: "call-outline", label: "Phone number", value: "+2772 897 1478" },
     {
       icon: "location-outline",
       label: "Address 1 - (Home)",
-      value: "123 Main Street, Springfield, IL 62704",
+      value: "123 Sebothoma Street, Morningside, Sandton, JHB",
     },
     {
       icon: "person",

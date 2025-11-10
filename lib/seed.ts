@@ -30,6 +30,7 @@ interface Customization {
 interface MenuItem {
   name: string;
   description: string;
+  image_id: string;
   image_url: string;
   price: number;
   rating: number;

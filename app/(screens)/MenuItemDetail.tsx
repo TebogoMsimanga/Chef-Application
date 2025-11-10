@@ -1,15 +1,23 @@
 import CustomButton from "@/components/CustomButton";
-import CustomHeader from "@/components/CustomHeader"; 
-import {images} from "@/constants";
-import {getCustomizationsForMenu, getMenuItem} from "@/lib/appwrite";
+import CustomHeader from "@/components/CustomHeader";
+import { images } from "@/constants";
+import { getCustomizationsForMenu, getMenuItem } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
-import {useCartStore} from "@/store/cart.store";
-import {CartCustomization, CustomizationItem, MenuItem} from "@/type"; 
-import {router, useLocalSearchParams} from "expo-router";
-import {StatusBar} from "expo-status-bar";
-import React, {useEffect, useState} from "react";
-import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
+import { useCartStore } from "@/store/cart.store";
+import { CartCustomization, CustomizationItem, MenuItem } from "@/type";
+import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MenuItemDetail = () => {
   const { id } = useLocalSearchParams();
@@ -31,6 +39,9 @@ const MenuItemDetail = () => {
     []
   );
   const [quantity, setQuantity] = useState(1);
+
+  // Add logging for debugging purposes
+  console.log("Customizations data:", customizations);
 
   useEffect(() => {
     // Refetch data if ID changes
@@ -64,6 +75,7 @@ const MenuItemDetail = () => {
     },
     {} as Record<string, CustomizationItem[]>
   );
+  console.log("groupedCustoms:", groupedCustoms);
 
   // Toggle selection
   const toggleCustom = (cust: CustomizationItem) => {
@@ -117,7 +129,7 @@ const MenuItemDetail = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <CustomHeader title={item.name} /> 
+      <CustomHeader title={item.name} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Image
           source={{ uri: item.image_url || images.placeholder }}
@@ -143,7 +155,7 @@ const MenuItemDetail = () => {
               <Text style={styles.nutritionLabel}>Protein</Text>
               <Text style={styles.nutritionValue}>{item.protein}g</Text>
             </View>
-            {/* Assuming 'type' can be used for bun type or similar, otherwise remove */}
+
             <View style={styles.nutritionItem}>
               <Text style={styles.nutritionLabel}>Type</Text>
               <Text style={styles.nutritionValue}>{item.type}</Text>

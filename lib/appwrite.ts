@@ -248,11 +248,11 @@ export const getMenuItem = async ({ id }: { id: string }) => {
     );
 
     const processedMenuItem = {
-      name: menuItem.name,
+      name: menuItem.name || 'Unnamed Item', 
       price: menuItem.price,
       image_id: menuItem.image_id,
-      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menuItem.image_id}/view?project=${appwriteConfig.projectId}`,
-      description: menuItem.description,
+      image_url: menuItem.image_id ? `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menuItem.image_id}/view?project=${appwriteConfig.projectId}` : '', // Fallback empty
+      description: menuItem.description || 'No description available', 
       calories: menuItem.calories,
       protein: menuItem.protein,
       rating: menuItem.rating,
@@ -288,7 +288,7 @@ export const getCustomizationsForMenu = async ({ menuId }: { menuId: string }) =
       image_id: cust.image_id,
       image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${cust.image_id}/view?project=${appwriteConfig.projectId}`,
       type: cust.type,
-      // menu_id: menuId, // Removed menu_id as it's not in schema
+      // Removed menu_id as it's not in schema
       $id: cust.$id,
       $createdAt: cust.$createdAt,
       $updatedAt: cust.$updatedAt,
