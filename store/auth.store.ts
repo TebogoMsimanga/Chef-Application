@@ -1,7 +1,7 @@
-import { getCurrentUser, account } from "@/lib/appwrite";
-import { User } from "@/type";
+import {account, getCurrentUser} from "@/lib/appwrite";
+import {User} from "@/type";
 import * as Sentry from "@sentry/react-native";
-import { create } from "zustand";
+import {create} from "zustand";
 
 type AuthState = {
   isAuthenticated: boolean;

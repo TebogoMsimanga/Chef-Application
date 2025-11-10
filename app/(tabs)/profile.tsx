@@ -1,18 +1,10 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  FlatList,
-} from "react-native";
-import React, { useEffect } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { InfoItemProps } from "@/type";
+import {FlatList, Image, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import React, {useEffect} from "react";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {Ionicons} from "@expo/vector-icons";
+import {InfoItemProps} from "@/type";
 import useAuthStore from "@/store/auth.store";
-import { StatusBar } from "expo-status-bar";
-import CustomHeader from "@/components/CustomHeader";
+import {StatusBar} from "expo-status-bar";
 
 const InfoItem = ({ icon, label, value }: InfoItemProps) => (
   <View style={styles.infoItem}>
@@ -47,18 +39,18 @@ export default function Profile() {
     {
       icon: "person-outline",
       label: "Full Name",
-      value: user.name || "Adrian Hajdin",
+      value: user.name,
     },
     {
       icon: "mail-outline",
       label: "Email",
-      value: user.email || "adrian@jsmastery.com",
+      value: user.email,
     },
-    { icon: "call-outline", label: "Phone number", value: "+1 555 123 4567" },
+    { icon: "call-outline", label: "Phone number", value: "+2772 897 1478" },
     {
       icon: "location-outline",
       label: "Address 1 - (Home)",
-      value: "123 Main Street, Springfield, IL 62704",
+      value: "123 Sebothoma Street, Morningside, Sandton, JHB",
     },
     {
       icon: "person",
@@ -87,7 +79,8 @@ export default function Profile() {
         ListFooterComponent={() => (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.editButton}>
-              <Text style={styles.editText}>Edit Profile</Text>
+              <Ionicons name="analytics" size={18} color="#e74c3c" />
+              <Text style={styles.editText}>Orders</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.logoutButton} onPress={logout}>
@@ -181,6 +174,9 @@ const styles = StyleSheet.create({
     marginTop: 25,
     paddingVertical: 14,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
   },
   editText: {
     color: "#f7931a",

@@ -1,9 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { images } from "@/constants";
-import { router } from "expo-router";
-import { useFavoritesStore } from "@/store/favorite.store";
-import { Ionicons } from "@expo/vector-icons";
+import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {router} from "expo-router";
+import {useFavoritesStore} from "@/store/favorite.store";
+import {Ionicons} from "@expo/vector-icons";
 
 const FavButton = () => {
   const totalFavorites = useFavoritesStore((state) => state.getTotalFavorites());

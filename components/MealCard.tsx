@@ -1,17 +1,10 @@
-import { images } from "@/constants";
-import { useCartStore } from "@/store/cart.store";
-import { useFavoritesStore } from "@/store/favorite.store"; 
-import { MenuItem } from "@/type";
+import {useCartStore} from "@/store/cart.store";
+import {useFavoritesStore} from "@/store/favorite.store";
+import {MenuItem} from "@/type";
 import React from "react";
-import {
-  Image,
-  ImageSourcePropType,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";  
+import {Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import {Ionicons} from "@expo/vector-icons";
+import {router} from "expo-router";
 
 const MealCard = ({ item }: { item: MenuItem }) => {
   
@@ -39,7 +32,10 @@ const MealCard = ({ item }: { item: MenuItem }) => {
   }
 
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={() => {
+      console.log("Attempting to navigate to MenuItemDetail with ID:", item.$id);
+      router.push(`/(screens)/MenuItemDetail?id=${item.$id}`);
+    }}>
       <Image
         source={imageSource}
         style={styles.image}

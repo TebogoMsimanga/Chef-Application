@@ -1,8 +1,8 @@
 import useAuthStore from "@/store/auth.store";
 import * as Sentry from "@sentry/react-native";
-import { useFonts } from "expo-font";
-import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import {useFonts} from "expo-font";
+import {SplashScreen, Stack} from "expo-router";
+import {useEffect} from "react";
 
 Sentry.init({
   dsn: "https://ab3cb0b3a23d0f3eb013dca85907f4e5@o4510228277624832.ingest.us.sentry.io/4510228291125248",

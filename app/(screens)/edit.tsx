@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import React, {useState} from "react";
+import {StyleSheet} from "react-native";
 import CreateMenuItem from "@/components/CreateMenuItem";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {StatusBar} from "expo-status-bar";
 
 const Edit = () => {
   const [refreshKey, setRefreshKey] = useState(0);

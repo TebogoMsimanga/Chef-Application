@@ -1,13 +1,7 @@
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import React, { useState } from "react";
-import { Category } from "@/type";
-import { router, useLocalSearchParams } from "expo-router";
+import {FlatList, StyleSheet, Text, TouchableOpacity,} from "react-native";
+import React, {useState} from "react";
+import {Category} from "@/type";
+import {router, useLocalSearchParams} from "expo-router";
 
 const Filter = ({ categories }: { categories: Category[] }) => {
   const searchParams = useLocalSearchParams();

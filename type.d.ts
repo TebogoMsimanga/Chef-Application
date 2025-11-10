@@ -1,5 +1,5 @@
-import { StyleProp, TextStyle, ViewStyle } from "react-native";
-import { Models } from "react-native-appwrite";
+import {StyleProp, TextStyle, ViewStyle} from "react-native";
+import {Models} from "react-native-appwrite";
 
 export interface MenuItem extends Models.Document {
   $id: string;
@@ -11,6 +11,15 @@ export interface MenuItem extends Models.Document {
   calories: number;
   protein: number;
   rating: number;
+  type: string;
+}
+
+export interface CustomizationItem extends Models.Document {
+  $id: string;
+  name: string;
+  price: number;
+  image_id: string;
+  image_url: string;
   type: string;
 }
 
@@ -115,6 +124,7 @@ interface CreateMenuItemParams {
   name: string;
   price: number;
   image_id: string;
+  image_url: string;
   description: string;
   calories: number;
   protein: number;

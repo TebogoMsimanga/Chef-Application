@@ -1,6 +1,6 @@
-import { View, Text, TextInput, StyleSheet } from "react-native";
-import React, { useState } from "react";
-import { CustomInputProps } from "@/type";
+import {StyleSheet, Text, TextInput, View} from "react-native";
+import React, {useState} from "react";
+import {CustomInputProps} from "@/type";
 
 const CustomInput = ({
   placeholder = "Enter text...",

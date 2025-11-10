@@ -1,13 +1,13 @@
-import { View, Text, FlatList, StyleSheet, Image } from "react-native";
+import {FlatList, Image, StyleSheet, Text, View} from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useCartStore } from "@/store/cart.store";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {useCartStore} from "@/store/cart.store";
 import CustomHeader from "@/components/CustomHeader";
-import { PaymentInfoProps } from "@/type";
+import {PaymentInfoProps} from "@/type";
 import CustomButton from "@/components/CustomButton";
 import CartItem from "@/components/CartItem";
-import { StatusBar } from "expo-status-bar";
-import { images } from "@/constants";
+import {StatusBar} from "expo-status-bar";
+import {images} from "@/constants";
 
 const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
   <View style={styles.row}>

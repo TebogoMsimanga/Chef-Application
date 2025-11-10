@@ -1,7 +1,7 @@
-import { TouchableOpacity, StyleSheet, Image, View, Text } from "react-native";
+import {Image, StyleSheet, TouchableOpacity} from "react-native";
 import React from "react";
-import { images } from "@/constants";
-import { router } from "expo-router";
+import {images} from "@/constants";
+import {router} from "expo-router";
 
 const AddButton = () => {
   return (

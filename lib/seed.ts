@@ -1,5 +1,5 @@
-import { ID } from "react-native-appwrite";
-import { appwriteConfig, databases, storage } from "./appwrite";
+import {ID} from "react-native-appwrite";
+import {appwriteConfig, databases, storage} from "./appwrite";
 import dummyData from "./data";
 
 
@@ -30,6 +30,7 @@ interface Customization {
 interface MenuItem {
   name: string;
   description: string;
+  image_id: string;
   image_url: string;
   price: number;
   rating: number;

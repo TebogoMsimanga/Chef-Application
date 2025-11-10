@@ -1,23 +1,23 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {SafeAreaView} from "react-native-safe-area-context";
 import CustomHeader from "./CustomHeader";
 import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
-import { CreateMenuItemParams, CreateMenuItemProps } from "@/type";
+import {CreateMenuItemParams, CreateMenuItemProps} from "@/type";
 import * as ImagePicker from "expo-image-picker";
-import { createMenuItem, storage, appwriteConfig } from "@/lib/appwrite"; 
-import { ID } from "react-native-appwrite";
+import {appwriteConfig, createMenuItem, storage} from "@/lib/appwrite";
+import {ID} from "react-native-appwrite";
 
 const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
   const [selectedAsset, setSelectedAsset] =

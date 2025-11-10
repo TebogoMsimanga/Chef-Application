@@ -1,19 +1,6 @@
-import {
-  CreateMenuItemParams,
-  CreateUserPrams,
-  GetMenuParams,
-  SignInParams,
-} from "@/type";
+import {CreateMenuItemParams, CreateUserPrams, SignInParams,} from "@/type";
 import * as Sentry from "@sentry/react-native";
-import {
-  Account,
-  Avatars,
-  Client,
-  Databases,
-  ID,
-  Query,
-  Storage,
-} from "react-native-appwrite";
+import {Account, Avatars, Client, Databases, ID, Query, Storage,} from "react-native-appwrite";
 
 export const appwriteConfig = {
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
@@ -27,8 +14,6 @@ export const appwriteConfig = {
   customizationTable: "customization",
   menuCustomizationTable: "menu_customizations",
 };
-
-console.log("Appwrite Config:", appwriteConfig); // Add this line for logging
 
 export const client = new Client();
 
@@ -98,9 +83,20 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const getMenu = async ({ category, query }: GetMenuParams) => {
+export const getMenu = async ({
+  category = "",
+  query = "",
+  limit = 20,
+}: {
+  category?: string;
+  query?: string;
+  limit?: number;
+}) => {
   try {
-    const queries: string[] = [Query.orderDesc("$createdAt"), Query.limit(20)];
+    const queries: string[] = [
+      Query.orderDesc("$createdAt"),
+      Query.limit(limit),
+    ];
 
     if (category) queries.push(Query.equal("category", category));
     if (query) queries.push(Query.search("name", query));
@@ -110,6 +106,8 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
       appwriteConfig.menuTable,
       queries
     );
+
+    console.log("Raw menus from Appwrite DB:", JSON.stringify(menus.documents, null, 2));
 
     // Process and validate menu items
     const processedMenus = menus.documents.map((menu) => ({
@@ -122,6 +120,7 @@ export const getMenu = async ({ category, query }: GetMenuParams) => {
       protein: menu.protein,
       rating: menu.rating,
       type: menu.type || "default",
+      category: menu.category,
       $id: menu.$id,
       $createdAt: menu.$createdAt,
       $updatedAt: menu.$updatedAt,
@@ -237,5 +236,71 @@ export const createMenuItem = async ({
   } catch (e) {
     Sentry.captureEvent(e as any);
     throw new Error(e as string);
+  }
+};
+
+export const getMenuItem = async ({ id }: { id: string }) => {
+  try {
+    const menuItem = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.menuTable,
+      id
+    );
+
+    const processedMenuItem = {
+      name: menuItem.name || 'Unnamed Item', 
+      price: menuItem.price,
+      image_id: menuItem.image_id,
+      image_url: menuItem.image_id ? `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menuItem.image_id}/view?project=${appwriteConfig.projectId}` : '', // Fallback empty
+      description: menuItem.description || 'No description available', 
+      calories: menuItem.calories,
+      protein: menuItem.protein,
+      rating: menuItem.rating,
+      type: menuItem.type || "default",
+      category: menuItem.category,
+      $id: menuItem.$id,
+      $createdAt: menuItem.$createdAt,
+      $updatedAt: menuItem.$updatedAt,
+      $permissions: menuItem.$permissions,
+      $collectionId: menuItem.$collectionId,
+      $databaseId: menuItem.$databaseId,
+      $sequence: menuItem.$sequence,
+    };
+
+    return processedMenuItem;
+  } catch (error) {
+    console.error("Error fetching menu item:", error);
+    throw new Error(error as string);
+  }
+};
+
+export const getCustomizationsForMenu = async ({ menuId }: { menuId: string }) => {
+  try {
+    const customizations = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.customizationTable,
+      [Query.orderAsc("name")] // Temporarily remove menu_id query
+    );
+
+    const processedCustomizations = customizations.documents.map((cust) => ({
+      name: cust.name,
+      price: cust.price,
+      image_id: cust.image_id,
+      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${cust.image_id}/view?project=${appwriteConfig.projectId}`,
+      type: cust.type,
+      // Removed menu_id as it's not in schema
+      $id: cust.$id,
+      $createdAt: cust.$createdAt,
+      $updatedAt: cust.$updatedAt,
+      $permissions: cust.$permissions,
+      $collectionId: cust.$collectionId,
+      $databaseId: cust.$databaseId,
+      $sequence: cust.$sequence,
+    }));
+
+    return processedCustomizations;
+  } catch (error) {
+    console.error("Error fetching customizations:", error);
+    throw new Error(error as string);
   }
 };

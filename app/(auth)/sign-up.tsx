@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, Alert } from "react-native";
-import React, { useState } from "react";
-import { Link, router } from "expo-router";
+import {Alert, StyleSheet, Text, View} from "react-native";
+import React, {useState} from "react";
+import {Link, router} from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
-import { createUser } from "@/lib/appwrite";
+import {createUser} from "@/lib/appwrite";
 import * as Sentry from "@sentry/react-native";
 
 const SignUp = () => {

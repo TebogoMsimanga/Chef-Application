@@ -1,14 +1,14 @@
-import { View, Text, FlatList, Image } from "react-native";
-import React, { useEffect, useState } from "react"; // Added useState for optimistic data
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useFavoritesStore } from "@/store/favorite.store";
+import {FlatList, Image, Text, View} from "react-native";
+import React, {useEffect, useState} from "react"; // Added useState for optimistic data
+import {SafeAreaView} from "react-native-safe-area-context";
+import {useFavoritesStore} from "@/store/favorite.store";
 import CustomHeader from "@/components/CustomHeader";
-import { StatusBar } from "expo-status-bar";
-import { images } from "@/constants";
+import {StatusBar} from "expo-status-bar";
+import {images} from "@/constants";
 import useAppwrite from "@/lib/useAppwrite";
-import { getFavorites } from "@/lib/appwrite";
+import {getFavorites} from "@/lib/appwrite";
 import FavoriteItem from "@/components/FavoriteItem";
-import { MenuItem } from "@/type";
+import {MenuItem} from "@/type";
 
 export default function Favorites() {
   const { favorites } = useFavoritesStore();

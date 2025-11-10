@@ -1,23 +1,14 @@
 import Filter from "@/components/Filter";
 import MealCard from "@/components/MealCard";
 import SearchBar from "@/components/SearchBar";
-import { images } from "@/constants";
-import { getCategories, getMenu } from "@/lib/appwrite";
-import seed from "@/lib/seed";
+import {images} from "@/constants";
+import {getCategories, getMenu} from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
-import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Button,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+import {useLocalSearchParams} from "expo-router";
+import React, {useEffect} from "react";
+import {FlatList, Image, StyleSheet, Text, View,} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {StatusBar} from "expo-status-bar";
 import FavButton from "@/components/FavButton";
 
 const Search = () => {

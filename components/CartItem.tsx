@@ -1,7 +1,7 @@
-import { useCartStore } from "@/store/cart.store";
-import { CartItemType } from "@/type";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import { images } from "@/constants";
+import {useCartStore} from "@/store/cart.store";
+import {CartItemType} from "@/type";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {images} from "@/constants";
 
 const CartItem = ({ item }: { item: CartItemType }) => {
   const { increaseQty, decreaseQty, removeItem } = useCartStore();

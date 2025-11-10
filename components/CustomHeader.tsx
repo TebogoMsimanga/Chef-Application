@@ -1,7 +1,7 @@
-import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import { CustomHeaderProps } from "@/type";
-import { images } from "@/constants";
+import {useRouter} from "expo-router";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {CustomHeaderProps} from "@/type";
+import {images} from "@/constants";
 
 const CustomHeader = ({ title }: CustomHeaderProps) => {
   const router = useRouter();
@@ -9,9 +9,12 @@ const CustomHeader = ({ title }: CustomHeaderProps) => {
   return (
     <View style={styles.header}>
       {/* Back button */}
-      <TouchableOpacity onPress={() => router.back()}>
-        <Image source={images.arrowBack} style={styles.icon} resizeMode="contain" />
-      </TouchableOpacity>
+      {router.canGoBack() && (
+        <TouchableOpacity onPress={() => router.back()}>
+          <Image source={images.arrowBack} style={styles.icon} resizeMode="contain" />
+        </TouchableOpacity>
+      )}
+      {!router.canGoBack() && <View style={styles.iconPlaceholder} />}
 
       {/* Title */}
       {title && <Text style={styles.title}>{title}</Text>}
@@ -39,11 +42,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 6, 
+    elevation: 6,
   },
   icon: {
-    width: 20,  
-    height: 20, 
+    width: 24,
+    height: 24,
+  },
+  iconPlaceholder: {
+    width: 24,
+    height: 24,
   },
   title: {
     fontSize: 16,           
