@@ -522,6 +522,130 @@ export async function deleteMenuItem(id: string) {
   }
 }
 
+/**
+ * Upload image to Supabase storage
+ * 
+ * @param {string} uri - Local file URI
+ * @param {string} fileName - Name for the file in storage
+ * @param {string} bucket - Storage bucket name (default: 'menu-images')
+ * @returns {Promise<string>} Public URL of uploaded image
+ */
+export async function uploadImage(
+  uri: string,
+  fileName: string,
+  bucket: string = 'menu-images'
+): Promise<string> {
+  try {
+    console.log('[Supabase] Uploading image:', fileName, 'to bucket:', bucket);
+    
+    // Read file as blob
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    
+    // Generate unique filename
+    const fileExt = fileName.split('.').pop();
+    const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `menu-items/${uniqueFileName}`;
+    
+    console.log('[Supabase] Uploading to path:', filePath);
+    
+    // Upload to Supabase storage
+    const { data, error } = await getSupabase()
+      .storage
+      .from(bucket)
+      .upload(filePath, blob, {
+        contentType: blob.type || 'image/jpeg',
+        upsert: false,
+      });
+    
+    if (error) {
+      console.error('[Supabase] Upload image error:', error.message);
+      Sentry.captureException(error, {
+        tags: { component: 'Supabase', action: 'uploadImage' },
+        extra: { fileName, bucket, errorMessage: error?.message },
+      });
+      throw error;
+    }
+    
+    // Get public URL
+    const { data: urlData } = getSupabase()
+      .storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+    
+    const publicUrl = urlData.publicUrl;
+    console.log('[Supabase] Image uploaded successfully:', publicUrl);
+    
+    return publicUrl;
+  } catch (error: any) {
+    console.error('[Supabase] Upload image failed:', error);
+    Sentry.captureException(error, {
+      tags: { component: 'Supabase', action: 'uploadImage' },
+      extra: { fileName, bucket, errorMessage: error?.message },
+    });
+    throw error;
+  }
+}
+
+/**
+ * Initialize categories if they don't exist
+ * Creates default categories for the application
+ * 
+ * @returns {Promise<void>}
+ */
+export async function initializeCategories() {
+  try {
+    console.log('[Supabase] Initializing categories...');
+    
+    const defaultCategories = [
+      { name: 'Breakfast', description: 'Morning meals and breakfast items' },
+      { name: 'Starters', description: 'Appetizers and starters' },
+      { name: 'Lunch', description: 'Lunch meals and dishes' },
+      { name: 'Supper', description: 'Evening meals' },
+      { name: 'Meals', description: 'Main meals and dishes' },
+    ];
+    
+    const supabase = getSupabase();
+    
+    // Check existing categories
+    const { data: existingCategories } = await supabase
+      .from('categories')
+      .select('name');
+    
+    const existingNames = new Set(existingCategories?.map(c => c.name.toLowerCase()) || []);
+    
+    // Insert only new categories
+    const newCategories = defaultCategories.filter(
+      cat => !existingNames.has(cat.name.toLowerCase())
+    );
+    
+    if (newCategories.length > 0) {
+      const { error } = await supabase
+        .from('categories')
+        .insert(newCategories);
+      
+      if (error) {
+        console.error('[Supabase] Initialize categories error:', error.message);
+        Sentry.captureException(error, {
+          tags: { component: 'Supabase', action: 'initializeCategories' },
+        });
+        throw error;
+      }
+      
+      console.log('[Supabase] Created', newCategories.length, 'new categories');
+    } else {
+      console.log('[Supabase] All categories already exist');
+    }
+  } catch (error: any) {
+    console.error('[Supabase] Initialize categories failed:', error);
+    Sentry.captureException(error, {
+      tags: { component: 'Supabase', action: 'initializeCategories' },
+      extra: { errorMessage: error?.message },
+    });
+    throw error;
+  }
+}
+
 // ============================================================================
 // FAVORITES FUNCTIONS
 // ============================================================================

@@ -39,7 +39,7 @@ export default CustomButton;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#0a26a0ff',
+    backgroundColor: '#FE8C00', // Orange theme color
     borderRadius: 9999,
     padding: 12,
     width: '100%',
