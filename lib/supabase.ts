@@ -187,6 +187,7 @@ export async function signUp({
 
 /**
  * Sign out current user
+ * Fully clears the session and removes all stored auth data
  * 
  * @returns {Promise<void>}
  */
@@ -194,6 +195,7 @@ export async function signOut() {
   try {
     console.log('[Supabase] Signing out user...');
     
+    // Sign out from Supabase (this clears the session)
     const { error } = await getSupabase().auth.signOut();
     
     if (error) {
@@ -204,7 +206,20 @@ export async function signOut() {
       throw error;
     }
     
-    console.log('[Supabase] Sign out successful');
+    // Clear any remaining session data
+    // Supabase's signOut() should handle this, but we ensure it's cleared
+    try {
+      const session = await getSupabase().auth.getSession();
+      if (session.data.session) {
+        console.log('[Supabase] Session still exists, forcing clear...');
+        await getSupabase().auth.signOut({ scope: 'global' });
+      }
+    } catch (clearError) {
+      console.warn('[Supabase] Error clearing session:', clearError);
+      // Don't throw, as the main signOut was successful
+    }
+    
+    console.log('[Supabase] Sign out successful - session cleared');
   } catch (error: any) {
     console.error('[Supabase] Sign out failed:', error);
     Sentry.captureException(error, {

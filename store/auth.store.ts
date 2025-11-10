@@ -108,12 +108,32 @@ const useAuthStore = create<AuthStore>((set, get) => ({
 
   /**
    * Logout the current user
-   * Signs out from Supabase and clears local state
+   * Signs out from Supabase and clears all local state
+   * Also clears cart and favorites stores
    */
   logout: async () => {
     try {
       console.log('[AuthStore] Logging out user...');
       
+      // Clear cart store
+      try {
+        const { useCartStore } = await import('@/store/cart.store');
+        useCartStore.getState().clearCart();
+        console.log('[AuthStore] Cart cleared');
+      } catch (error) {
+        console.warn('[AuthStore] Error clearing cart:', error);
+      }
+
+      // Clear favorites store
+      try {
+        const { useFavoritesStore } = await import('@/store/favorite.store');
+        useFavoritesStore.getState().clearFavorites();
+        console.log('[AuthStore] Favorites cleared');
+      } catch (error) {
+        console.warn('[AuthStore] Error clearing favorites:', error);
+      }
+      
+      // Sign out from Supabase
       await signOut();
       
       console.log('[AuthStore] User logged out successfully');
@@ -121,7 +141,8 @@ const useAuthStore = create<AuthStore>((set, get) => ({
       // Clear user context in Sentry
       Sentry.setUser(null);
       
-      set({ user: null, isAuthenticated: false });
+      // Clear local state
+      set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error: any) {
       console.error('[AuthStore] Error signing out:', error);
       
@@ -137,6 +158,10 @@ const useAuthStore = create<AuthStore>((set, get) => ({
         },
       });
       
+      // Still clear local state even if signOut fails
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      Sentry.setUser(null);
+      
       throw error;
     }
   },
@@ -148,24 +173,40 @@ const useAuthStore = create<AuthStore>((set, get) => ({
  * Only runs on client side (not during SSR)
  */
 if (typeof window !== 'undefined') {
-  console.log('[AuthStore] Setting up auth state change listener');
-  
-  getSupabase().auth.onAuthStateChange((event, session) => {
-    console.log('[AuthStore] Auth state changed:', event, session?.user?.email || 'no session');
+  try {
+    console.log('[AuthStore] Setting up auth state change listener');
     
-    if (event === 'SIGNED_IN' && session) {
-      console.log('[AuthStore] User signed in, fetching user data...');
-      useAuthStore.getState().fetchAuthenticatedUser();
-    } else if (event === 'SIGNED_OUT') {
-      console.log('[AuthStore] User signed out, clearing state...');
-      useAuthStore.setState({ user: null, isAuthenticated: false });
-      Sentry.setUser(null);
-    } else if (event === 'TOKEN_REFRESHED') {
-      console.log('[AuthStore] Token refreshed');
-      // Optionally refetch user data on token refresh
-      useAuthStore.getState().fetchAuthenticatedUser();
-    }
-  });
+    // Use a small delay to ensure getSupabase is available
+    setTimeout(() => {
+      try {
+        const supabase = getSupabase();
+        if (supabase && supabase.auth) {
+          supabase.auth.onAuthStateChange((event, session) => {
+            console.log('[AuthStore] Auth state changed:', event, session?.user?.email || 'no session');
+            
+            if (event === 'SIGNED_IN' && session) {
+              console.log('[AuthStore] User signed in, fetching user data...');
+              useAuthStore.getState().fetchAuthenticatedUser();
+            } else if (event === 'SIGNED_OUT') {
+              console.log('[AuthStore] User signed out, clearing state...');
+              useAuthStore.setState({ user: null, isAuthenticated: false });
+              Sentry.setUser(null);
+            } else if (event === 'TOKEN_REFRESHED') {
+              console.log('[AuthStore] Token refreshed');
+              // Optionally refetch user data on token refresh
+              useAuthStore.getState().fetchAuthenticatedUser();
+            }
+          });
+        } else {
+          console.warn('[AuthStore] Supabase client not available for auth listener');
+        }
+      } catch (error) {
+        console.warn('[AuthStore] Error setting up auth listener:', error);
+      }
+    }, 100);
+  } catch (error) {
+    console.warn('[AuthStore] Error initializing auth listener:', error);
+  }
 }
 
 export default useAuthStore;
