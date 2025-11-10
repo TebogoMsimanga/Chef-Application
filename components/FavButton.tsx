@@ -18,33 +18,45 @@ import {Ionicons} from "@expo/vector-icons";
 
 const FavButton = () => {
   const { user } = useAuthStore();
-  const { getTotalFavorites } = useFavoritesStore();
-  const [totalFavorites, setTotalFavorites] = useState(0);
+  // Subscribe to favorites store for real-time updates
+  const totalFavorites = useFavoritesStore((state) => state.getTotalFavorites());
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load favorites count from Supabase
+  // Load favorites from database on mount and sync with store
   useEffect(() => {
-    if (user?.id) {
-      loadFavoritesCount();
+    if (user?.id && !isInitialized) {
+      loadAndSyncFavorites();
+    } else if (!user?.id) {
+      // Clear favorites when user logs out
+      useFavoritesStore.getState().clearFavorites();
+      setIsInitialized(false);
     }
-  }, [user]);
+  }, [user, isInitialized]);
 
   /**
-   * Load favorites count from Supabase
+   * Load favorites from Supabase and sync with store
    */
-  const loadFavoritesCount = async () => {
+  const loadAndSyncFavorites = async () => {
     try {
       if (!user?.id) return;
 
-      console.log("[FavButton] Loading favorites count for user:", user.id);
+      console.log("[FavButton] Loading and syncing favorites for user:", user.id);
       const favorites = await getFavorites(user.id);
-      const count = favorites?.length || 0;
       
-      console.log("[FavButton] Favorites count:", count);
-      setTotalFavorites(count);
+      // Extract menu item IDs from favorites
+      const favoriteIds = favorites.map((fav: any) => 
+        fav.menu_item_id || fav.menu_item?.id || fav.id
+      ).filter((id: string) => id);
+      
+      console.log("[FavButton] Favorites loaded:", favoriteIds.length);
+      
+      // Initialize store with database favorites
+      useFavoritesStore.getState().initializeFavorites(favoriteIds);
+      setIsInitialized(true);
     } catch (error: any) {
-      console.error("[FavButton] Error loading favorites count:", error);
+      console.error("[FavButton] Error loading favorites:", error);
       Sentry.captureException(error, {
-        tags: { component: "FavButton", action: "loadFavoritesCount" },
+        tags: { component: "FavButton", action: "loadAndSyncFavorites" },
         extra: { userId: user?.id, errorMessage: error?.message },
       });
     }

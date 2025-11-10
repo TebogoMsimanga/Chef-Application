@@ -155,4 +155,5 @@ interface FavoritesStore {
     isFavorite: (id: string) => boolean;
     clearFavorites: () => void;
     getTotalFavorites: () => number;
+    initializeFavorites: (favoriteIds: string[]) => void;
 };
