@@ -63,6 +63,7 @@ export default function TabLayout() {
           shadowRadius: 4,
           elevation: 5,
           borderTopWidth: 0,
+          zIndex: 1000,
         },
       }}
     >
