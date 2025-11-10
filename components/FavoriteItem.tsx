@@ -16,7 +16,7 @@ import { router } from "expo-router";
 import * as Sentry from "@sentry/react-native";
 import { removeFavorite } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
-import useFavoritesStore from "@/store/favorite.store";
+import { useFavoritesStore } from "@/store/favorite.store";
 
 interface FavoriteItemProps {
   item: any;

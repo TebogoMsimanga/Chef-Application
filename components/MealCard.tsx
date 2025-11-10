@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Sentry from "@sentry/react-native";
 import { addFavorite, removeFavorite, getFavorites } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
-import useFavoritesStore from "@/store/favorite.store";
+import { useFavoritesStore } from "@/store/favorite.store";
 
 interface MealCardProps {
   item: any;

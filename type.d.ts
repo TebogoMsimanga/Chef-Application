@@ -82,6 +82,7 @@ interface CustomButtonProps {
   leftIcon?: React.ReactNode;
   textStyle?: StyleProp<TextStyle>;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 interface CustomHeaderProps {

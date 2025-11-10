@@ -30,6 +30,8 @@ import {
   Alert,
   FlatList,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -409,7 +411,11 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
       <CustomHeader title="Menu Items" />
 
       {/* Tab Switcher */}
@@ -446,6 +452,7 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.form}>
             <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
@@ -546,26 +553,23 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
               </View>
             </View>
 
-            {uploading && (
-              <View style={styles.uploadingContainer}>
-                <ActivityIndicator size="small" color="#FE8C00" />
-                <Text style={styles.uploadingText}>Uploading image...</Text>
-              </View>
-            )}
-
-            {loading ? (
-              <ActivityIndicator
-                size="large"
-                color="#FE8C00"
-                style={{ marginTop: 20 }}
-              />
-            ) : (
-              <CustomButton
-                title={uploading ? "Uploading..." : "Add to Menu"}
-                onPress={handleSubmit}
-                style={[styles.button, uploading && styles.buttonDisabled]}
-              />
-            )}
+            {/* Single loading state - show button with loading indicator inside */}
+            <CustomButton
+              title={
+                loading
+                  ? uploading
+                    ? "Uploading image..."
+                    : "Creating menu item..."
+                  : "Add to Menu"
+              }
+              onPress={handleSubmit}
+              style={[
+                styles.button,
+                (loading || uploading) && styles.buttonDisabled,
+              ]}
+              isLoading={loading || uploading}
+              disabled={loading || uploading}
+            />
           </View>
         </ScrollView>
       ) : (
@@ -605,7 +609,7 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
           )}
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -646,18 +650,6 @@ const styles = StyleSheet.create({
   },
   form: {
     marginTop: 20,
-  },
-  uploadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-    gap: 8,
-  },
-  uploadingText: {
-    fontSize: 14,
-    fontFamily: "Quicksand-Medium",
-    color: "#FE8C00",
   },
   listContainer: {
     flex: 1,

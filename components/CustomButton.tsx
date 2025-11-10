@@ -8,15 +8,19 @@ const CustomButton = ({
   style,
   textStyle,
   leftIcon,
-  isLoading = false
+  isLoading = false,
+  disabled = false
 } : CustomButtonProps) => {
   return (
     <TouchableOpacity 
     style={[
       styles.button,
-      style
+      style,
+      disabled && styles.buttonDisabled
     ]}
     onPress={onPress}
+    disabled={disabled || isLoading}
+    activeOpacity={disabled || isLoading ? 1 : 0.7}
     >
       {leftIcon}
       <View style={styles.loaderBtn}>
@@ -57,5 +61,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: 'Quicksand-SemiBold',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });
