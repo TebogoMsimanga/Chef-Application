@@ -1,55 +1,78 @@
 import CustomButton from "@/components/CustomButton";
 import CustomHeader from "@/components/CustomHeader";
 import {images} from "@/constants";
-import {getCustomizationsForMenu, getMenuItem} from "@/lib/appwrite";
-import useAppwrite from "@/lib/useAppwrite";
+import {getMenuItem, getSides, getToppings} from "@/lib/supabase";
 import {useCartStore} from "@/store/cart.store";
-import {CartCustomization, CustomizationItem, MenuItem} from "@/type";
+import {CartCustomization} from "@/type";
 import {router, useLocalSearchParams} from "expo-router";
 import {StatusBar} from "expo-status-bar";
 import React, {useEffect, useState} from "react";
-import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  rating: number;
+  calories: number;
+  protein: number;
+  category: { name: string };
+}
+
+interface CustomizationItem {
+  id: string;
+  name: string;
+  price: number;
+  type: string;
+  image: string;
+}
 
 const MenuItemDetail = () => {
   const { id } = useLocalSearchParams();
   const addToCart = useCartStore((state) => state.addItem);
 
-  // Fetch menu item
-  const { data: item, loading: itemLoading } = useAppwrite<
-    MenuItem,
-    { id: string }
-  >({ fn: getMenuItem, params: { id: id as string } });
-
-  // Fetch customizations
-  const { data: customizations, loading: custLoading } = useAppwrite<
-    CustomizationItem[],
-    { menuId: string }
-  >({ fn: getCustomizationsForMenu, params: { menuId: id as string } });
-
-  const [selectedCustoms, setSelectedCustoms] = useState<CartCustomization[]>(
-    []
-  );
+  const [item, setItem] = useState<MenuItem | null>(null);
+  const [sides, setSides] = useState<CustomizationItem[]>([]);
+  const [toppings, setToppings] = useState<CustomizationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCustoms, setSelectedCustoms] = useState<CartCustomization[]>([]);
   const [quantity, setQuantity] = useState(1);
 
-  // Add logging for debugging purposes
-  console.log("Customizations data:", customizations);
-
   useEffect(() => {
-    // Refetch data if ID changes
-    if (id) {
-      // No need to call refetch explicitly here if useAppwrite handles it based on params change
-      // but if it doesn't, you'd call itemRefetch() and custRefetch()
-    }
+    loadData();
   }, [id]);
 
-  if (itemLoading || custLoading) {
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [menuItem, sidesData, toppingsData] = await Promise.all([
+        getMenuItem(id as string),
+        getSides(),
+        getToppings()
+      ]);
+
+      setItem(menuItem);
+      setSides(sidesData || []);
+      setToppings(toppingsData || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FE8C00" />
         <Text style={styles.loadingText}>Loading...</Text>
       </SafeAreaView>
     );
   }
+
   if (!item) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -58,56 +81,51 @@ const MenuItemDetail = () => {
     );
   }
 
-  // Group customizations by type
-  const groupedCustoms = customizations?.reduce(
-    (acc: Record<string, CustomizationItem[]>, cust: CustomizationItem) => {
-      if (!acc[cust.type]) acc[cust.type] = [];
-      acc[cust.type].push(cust);
-      return acc;
-    },
-    {} as Record<string, CustomizationItem[]>
-  );
-  console.log("groupedCustoms:", groupedCustoms);
+  const groupedCustoms: Record<string, CustomizationItem[]> = {};
+  
+  [...sides, ...toppings].forEach((cust) => {
+    if (!groupedCustoms[cust.type]) {
+      groupedCustoms[cust.type] = [];
+    }
+    groupedCustoms[cust.type].push(cust);
+  });
 
-  // Toggle selection
   const toggleCustom = (cust: CustomizationItem) => {
-    const exists = selectedCustoms.find((s) => s.id === cust.$id);
+    const exists = selectedCustoms.find((s) => s.id === cust.id);
     if (exists) {
-      setSelectedCustoms(selectedCustoms.filter((s) => s.id !== cust.$id));
+      setSelectedCustoms(selectedCustoms.filter((s) => s.id !== cust.id));
     } else {
       setSelectedCustoms([
         ...selectedCustoms,
-        { id: cust.$id, name: cust.name, price: cust.price, type: cust.type },
+        { id: cust.id, name: cust.name, price: cust.price, type: cust.type },
       ]);
     }
   };
 
-  // Calculate total price
   const customTotal = selectedCustoms.reduce((sum, c) => sum + c.price, 0);
   const totalPrice = (item.price + customTotal) * quantity;
 
-  // Add to cart
   const handleAddToCart = () => {
     addToCart({
-      id: item.$id,
+      id: item.id,
       name: item.name,
       price: item.price,
-      image_url: item.image_url,
+      image_url: item.image,
       customizations: selectedCustoms,
     });
-    router.back(); // Or to cart
+    router.back();
   };
 
-  // Render customization item
   const renderCustomItem = ({ item: cust }: { item: CustomizationItem }) => {
-    const isSelected = selectedCustoms.some((s) => s.id === cust.$id);
+    const isSelected = selectedCustoms.some((s) => s.id === cust.id);
     return (
       <View style={styles.customItem}>
         <Image
-          source={{ uri: cust.image_url || images.placeholder }}
+          source={{ uri: cust.image || images.placeholder }}
           style={styles.customImage}
         />
         <Text style={styles.customName}>{cust.name}</Text>
+        <Text style={styles.customPrice}>R {cust.price.toFixed(2)}</Text>
         <TouchableOpacity
           style={[styles.addButton, isSelected && styles.addButtonSelected]}
           onPress={() => toggleCustom(cust)}
@@ -124,7 +142,7 @@ const MenuItemDetail = () => {
       <CustomHeader title={item.name} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <Image
-          source={{ uri: item.image_url || images.placeholder }}
+          source={{ uri: item.image || images.placeholder }}
           style={styles.itemImage}
         />
         <View style={styles.detailsContainer}>
@@ -147,36 +165,33 @@ const MenuItemDetail = () => {
               <Text style={styles.nutritionLabel}>Protein</Text>
               <Text style={styles.nutritionValue}>{item.protein}g</Text>
             </View>
-
             <View style={styles.nutritionItem}>
-              <Text style={styles.nutritionLabel}>Type</Text>
-              <Text style={styles.nutritionValue}>{item.type}</Text>
+              <Text style={styles.nutritionLabel}>Category</Text>
+              <Text style={styles.nutritionValue}>{item.category?.name || 'N/A'}</Text>
             </View>
           </View>
 
           <View style={styles.deliveryInfo}>
-            <Text style={styles.deliveryTag}>R Free Delivery</Text>
+            <Text style={styles.deliveryTag}>Free Delivery</Text>
             <Text style={styles.deliveryTag}>20 - 30 mins</Text>
-            <Text style={styles.deliveryTag}>4.5</Text>
+            <Text style={styles.deliveryTag}>★ {item.rating}</Text>
           </View>
 
-          {/* Toppings and Sides */}
-          {groupedCustoms &&
-            Object.keys(groupedCustoms).map((type) => (
-              <View key={type} style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}s
-                </Text>
-                <FlatList
-                  data={groupedCustoms[type]}
-                  renderItem={renderCustomItem}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(cust) => cust.$id}
-                  contentContainerStyle={styles.customListContainer}
-                />
-              </View>
-            ))}
+          {Object.keys(groupedCustoms).map((type) => (
+            <View key={type} style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}s
+              </Text>
+              <FlatList
+                data={groupedCustoms[type]}
+                renderItem={renderCustomItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(cust) => cust.id}
+                contentContainerStyle={styles.customListContainer}
+              />
+            </View>
+          ))}
 
           <View style={styles.quantityContainer}>
             <TouchableOpacity
@@ -341,6 +356,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Quicksand-Medium",
     color: "#1A1A1A",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  customPrice: {
+    fontSize: 12,
+    fontFamily: "Quicksand-SemiBold",
+    color: "#FE8C00",
     textAlign: "center",
     marginBottom: 8,
   },

@@ -5,6 +5,7 @@ import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
 import {createUser} from "@/lib/appwrite";
 import * as Sentry from "@sentry/react-native";
+import { signUp } from "@/lib/supabase";
 
 const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,7 +25,7 @@ const SignUp = () => {
     setIsSubmitting(true);
 
     try {
-      await createUser({
+      await signUp({
         email: form.email,
         password: form.password,
         name: form.name,

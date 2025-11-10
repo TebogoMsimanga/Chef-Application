@@ -1,163 +1,143 @@
-import {useCartStore} from "@/store/cart.store";
-import {useFavoritesStore} from "@/store/favorite.store";
-import {MenuItem} from "@/type";
-import React from "react";
-import {Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
-import {Ionicons} from "@expo/vector-icons";
-import {router} from "expo-router";
+import React, { useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import { images } from "@/constants";
+import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { addFavorite, removeFavorite } from "@/lib/supabase";
+import useAuthStore from "@/store/auth.store";
 
-const MealCard = ({ item }: { item: MenuItem }) => {
-  
-  const placeholderImage = require("@/assets/images/placeholder.png");
+interface MealCardProps {
+  item: any;
+  isFavorite?: boolean;
+}
 
-  const { addItem } = useCartStore();
-  const { toggleFavorite, isFavorite } = useFavoritesStore();  
-  console.log(
-    `Menu item data for ${item.name}:`,
-    JSON.stringify(item, null, 2)
-  );
+const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
+  const { user } = useAuthStore();
+  const [favorite, setFavorite] = useState(isFavorite);
 
-  
-  let imageSource: ImageSourcePropType = placeholderImage;
-
-  try {
-    if (item.image_url) {
-      console.log(`Setting image URL for ${item.name}:`, item.image_url);
-      imageSource = { uri: item.image_url };
-    } else {
-      console.log(`No valid image URL for ${item.name}, using placeholder`);
+  const toggleFavorite = async () => {
+    if (!user?.id) {
+      Alert.alert("Error", "Please login to add favorites");
+      return;
     }
-  } catch (error) {
-    console.error(`Error processing image URL for ${item.name}:`, error);
-  }
+
+    try {
+      if (favorite) {
+        await removeFavorite(user.id, item.id);
+        setFavorite(false);
+      } else {
+        await addFavorite(user.id, item.id);
+        setFavorite(true);
+      }
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    }
+  };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={() => {
-      console.log("Attempting to navigate to MenuItemDetail with ID:", item.$id);
-      router.push(`/(screens)/MenuItemDetail?id=${item.$id}`);
-    }}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() => router.push(`/MenuItemDetail?id=${item.id}`)}
+    >
       <Image
-        source={imageSource}
+        source={{ uri: item.image || images.placeholder }}
         style={styles.image}
-        resizeMode="contain"
-        defaultSource={placeholderImage}
+        resizeMode="cover"
       />
-
-      <Text style={styles.name} numberOfLines={1}>
-        {item.name}
-      </Text>
-
-     
-      <View style={styles.detailsRow}>
-        <Text style={styles.detailText}>{item.rating.toFixed(1)} ⭐</Text>
-        <Text style={styles.detailText}>{item.calories} cal</Text>
-        <Text style={styles.detailText}>{item.protein}g protein</Text>
-      </View>
-
-      <Text style={styles.price}>From R{item.price.toFixed(2)}</Text>
-      <TouchableOpacity onPress={() => addItem({
-        id: item.$id,
-        name: item.name,
-        price: item.price,
-        image_url: item.image_url,
-        customizations: []
-      })}>
-        <View style={styles.addToCart}>
-          <Text style={styles.addText}>Add to Cart +</Text>
-        </View>
-      </TouchableOpacity>
-       <TouchableOpacity 
+      
+      <TouchableOpacity
         style={styles.favoriteButton}
-        onPress={() => toggleFavorite(item.$id)}
+        onPress={toggleFavorite}
       >
-        <Ionicons 
-          name={isFavorite(item.$id) ? "heart" : "heart-outline"} 
-          size={24} 
-          color={isFavorite(item.$id) ? "#EF4444" : "#5D5F6D"} 
+        <Ionicons
+          name={favorite ? "heart" : "heart-outline"}
+          size={24}
+          color={favorite ? "#EF4444" : "#fff"}
         />
       </TouchableOpacity>
+
+      <View style={styles.details}>
+        <Text style={styles.name} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {item.description}
+        </Text>
+        <View style={styles.footer}>
+          <Text style={styles.price}>R {item.price?.toFixed(2)}</Text>
+          <View style={styles.rating}>
+            <Ionicons name="star" size={16} color="#FFA500" />
+            <Text style={styles.ratingText}>{item.rating || "4.5"}</Text>
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 };
 
-export default MealCard;
-
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    paddingVertical: 40,  
-    paddingHorizontal: 16,
-    paddingTop: 100,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 32, 
-    borderWidth: 1,
-    borderColor: "#FE8C00",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    shadowColor: "rgba(0,0,0,0.15)",  
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,  
+    width: 180,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginRight: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   image: {
-    width: 140,  
-    height: 140,
-    position: "absolute",
-    top: -50,
-    alignSelf: "center",
-    borderRadius: 70,  
+    width: "100%",
+    height: 120,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   favoriteButton: {
     position: "absolute",
-    top: 10,
-    right: 10,
-    padding: 4,
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 20,
+    padding: 6,
+  },
+  details: {
+    padding: 12,
   },
   name: {
-    fontSize: 18,  
+    fontSize: 16,
     fontFamily: "Quicksand-Bold",
     color: "#1A1A1A",
-    textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  detailsRow: {
-    flexDirection: "column",
-    justifyContent: "center",
-    textAlign: "center",
-    alignItems: "center",
-    width: "100%",
-    paddingHorizontal: 8,
-    marginBottom: 12,
-  },
-  detailText: {
+  description: {
     fontSize: 12,
     fontFamily: "Quicksand-Medium",
-    color: "#5D5F6D",
+    color: "#666",
+    marginBottom: 8,
+    height: 32,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   price: {
-    fontSize: 16,  
-    fontFamily: "Quicksand-SemiBold",
+    fontSize: 16,
+    fontFamily: "Quicksand-Bold",
     color: "#FE8C00",
-    marginBottom: 16,
   },
-  addToCart: {
+  rating: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FE8C00",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    gap: 8,
+    gap: 4,
   },
-  addText: {
-    color: "#FFFFFF",
-    fontFamily: "Quicksand-Bold",
+  ratingText: {
     fontSize: 14,
-  },
-  addIcon: {
-    width: 16,
-    height: 16,
-    tintColor: "#FFFFFF",
+    fontFamily: "Quicksand-SemiBold",
+    color: "#1A1A1A",
   },
 });
+
+export default MealCard;

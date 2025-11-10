@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import {Link, router} from "expo-router";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
-import {signIn} from "@/lib/appwrite";
+import {signIn} from "@/lib/supabase";
 import * as Sentry from "@sentry/react-native";
 
 const SignIn = () => {

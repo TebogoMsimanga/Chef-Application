@@ -8,6 +8,7 @@ import CustomButton from "@/components/CustomButton";
 import CartItem from "@/components/CartItem";
 import {StatusBar} from "expo-status-bar";
 import {images} from "@/constants";
+import {router} from "expo-router";
 
 const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
   <View style={styles.row}>
@@ -117,7 +118,7 @@ export default function Cart() {
 
                 <PaymentInfo
                   label={`Total`}
-                  value={`R${(totalPrice + 5 - 0.5).toFixed(2)}`}
+                  value={`R${(totalPrice + 50 - 15).toFixed(2)}`}
                   labelStyle={
                     "fontSize: 16 fontFamily: Quicksand-Bold color: #1A1A1A"
                   }
@@ -125,8 +126,9 @@ export default function Cart() {
                 />
               </View>
               <CustomButton
-                title="Order Now"
+                title="Proceed to Checkout"
                 style={{ backgroundColor: "#FE8C00" }}
+                onPress={() => router.push("/checkout")}
               />
             </View>
           )
