@@ -19,6 +19,7 @@ import * as Sentry from "@sentry/react-native";
 import { addFavorite, removeFavorite, getFavorites } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
 import { useFavoritesStore } from "@/store/favorite.store";
+import { useCartStore } from "@/store/cart.store";
 
 interface MealCardProps {
   item: any;
@@ -28,7 +29,18 @@ interface MealCardProps {
 const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
   const { user } = useAuthStore();
   const { addFavorite: addToStore, removeFavorite: removeFromStore } = useFavoritesStore();
+  const addToCart = useCartStore((state) => state.addItem);
+  const cartItems = useCartStore((state) => state.items);
   const [favorite, setFavorite] = useState(isFavorite);
+
+  // Get quantity of this item in cart (sum of all quantities for this item ID)
+  const getItemQuantity = () => {
+    return cartItems
+      .filter((cartItem) => cartItem.id === item.id)
+      .reduce((total, cartItem) => total + cartItem.quantity, 0);
+  };
+
+  const itemQuantity = getItemQuantity();
 
   // Check if item is favorite on mount
   useEffect(() => {
@@ -119,6 +131,33 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
     }
   };
 
+  /**
+   * Handle add to cart
+   * Adds item to cart without customizations
+   */
+  const handleAddToCart = () => {
+    try {
+      console.log("[MealCard] Adding item to cart:", item.id, item.name);
+      
+      addToCart({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image_url: item.image || images.placeholder,
+        customizations: [],
+      });
+
+      console.log("[MealCard] Item added to cart successfully");
+    } catch (error: any) {
+      console.error("[MealCard] Error adding to cart:", error);
+      Sentry.captureException(error, {
+        tags: { component: "MealCard", action: "handleAddToCart" },
+        extra: { itemId: item.id, itemName: item.name },
+      });
+      Alert.alert("Error", "Failed to add item to cart. Please try again.");
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.container}
@@ -189,11 +228,15 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
             style={styles.addButton}
             onPress={(e) => {
               e.stopPropagation();
-              // TODO: Add to cart functionality
-              console.log("[MealCard] Add to cart:", item.id);
+              handleAddToCart();
             }}
           >
-            <Ionicons name="add" size={20} color="#fff" />
+            <Ionicons name="cart-outline" size={20} color="#fff" />
+            {itemQuantity > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{itemQuantity}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -317,6 +360,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+    position: "relative",
+  },
+  cartBadge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  cartBadgeText: {
+    fontSize: 11,
+    fontFamily: "Quicksand-Bold",
+    color: "#fff",
   },
 });
 
