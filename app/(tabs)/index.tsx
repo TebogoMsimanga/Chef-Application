@@ -118,6 +118,12 @@ export default function Index() {
                   <Text style={styles.homeText}>{item.title}</Text>
                   
                   {/* Meal Count - Dynamic from DB */}
+                  <View style={[isEven ? styles.left : styles.right,]}>
+                    <Text style={{
+                      color: "#fff"
+                    }}>
+                      Meal Counter:
+                    </Text>
                   <Text style={{
                     backgroundColor: "#FE8C00",
                     paddingHorizontal: 10,
@@ -128,6 +134,7 @@ export default function Index() {
                     marginTop: 5,
                     color: "#fff"
                   }}>{categoryCounts[item.title] || 0} Meals</Text>
+                  </View>
                 </View>
               </Pressable>
             </View>
@@ -172,8 +179,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 45,
+    height: 45,
     borderRadius: 9999
   },
   userInfoTextContainer: {
