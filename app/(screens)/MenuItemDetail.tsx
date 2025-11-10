@@ -63,6 +63,16 @@ const MenuItemDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Subscribe to favorites store for real-time updates
+  const isFavoriteInStore = useFavoritesStore((state) => state.isFavorite(item?.id || ""));
+
+  // Sync local state with store
+  useEffect(() => {
+    if (item?.id) {
+      setIsFavorite(isFavoriteInStore);
+    }
+  }, [isFavoriteInStore, item?.id]);
+
   console.log("[MenuItemDetail] Screen rendered with ID:", id);
 
   useEffect(() => {
@@ -150,15 +160,19 @@ const MenuItemDetail = () => {
 
       if (isFavorite) {
         console.log("[MenuItemDetail] Removing favorite...");
+        // Update database first
         await removeFavorite(user.id, item.id);
-        setIsFavorite(false);
+        // Then update local store (this will trigger re-renders everywhere)
         removeFromStore(item.id);
+        setIsFavorite(false);
         console.log("[MenuItemDetail] Favorite removed successfully");
       } else {
         console.log("[MenuItemDetail] Adding favorite...");
+        // Update database first
         await addFavorite(user.id, item.id);
-        setIsFavorite(true);
+        // Then update local store (this will trigger re-renders everywhere)
         addToStore(item.id);
+        setIsFavorite(true);
         console.log("[MenuItemDetail] Favorite added successfully");
       }
     } catch (error: any) {

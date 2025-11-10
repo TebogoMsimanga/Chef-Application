@@ -45,14 +45,13 @@ const FavoriteItem = ({ item, onRemove }: FavoriteItemProps) => {
 
       console.log("[FavoriteItem] Removing favorite:", item.id);
 
+      // Update database first
       await removeFavorite(user.id, item.id);
       
-      // Update local store
+      // Then update local store (this will trigger re-renders everywhere)
       removeFromStore(item.id);
       
       console.log("[FavoriteItem] Favorite removed successfully");
-      
-      Alert.alert("Success", "Removed from favorites");
       
       // Call onRemove callback to refresh list
       if (onRemove) {

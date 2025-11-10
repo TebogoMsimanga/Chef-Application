@@ -17,16 +17,18 @@ import { images } from "@/constants";
 import FavoriteItem from "@/components/FavoriteItem";
 import { getFavorites } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
+import { useFavoritesStore } from "@/store/favorite.store";
 
 export default function Favorite() {
   const { user } = useAuthStore();
+  const { initializeFavorites } = useFavoritesStore();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
   console.log("[Favorites] Screen rendered");
 
   /**
-   * Load user's favorites from Supabase
+   * Load user's favorites from Supabase and sync with store
    */
   const loadFavorites = useCallback(async () => {
     if (!user?.id) {
@@ -43,6 +45,12 @@ export default function Favorite() {
       
       console.log("[Favorites] Favorites loaded:", data?.length || 0, "items");
       setFavorites(data || []);
+      
+      // Sync with store for real-time updates
+      const favoriteIds = data.map((fav: any) => 
+        fav.menu_item_id || fav.menu_item?.id || fav.id
+      ).filter((id: string) => id);
+      initializeFavorites(favoriteIds);
     } catch (error: any) {
       console.error("[Favorites] Error loading favorites:", error);
       
@@ -56,7 +64,7 @@ export default function Favorite() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, initializeFavorites]);
 
   useEffect(() => {
     loadFavorites();
