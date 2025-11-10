@@ -880,6 +880,82 @@ export async function getOrders(userId: string) {
 }
 
 // ============================================================================
+// APP SETTINGS FUNCTIONS
+// ============================================================================
+
+/**
+ * Get app setting by key
+ * 
+ * @param {string} key - Setting key (e.g., 'delivery_fee', 'discount')
+ * @returns {Promise<number>} Setting value
+ */
+export async function getAppSetting(key: string): Promise<number> {
+  try {
+    console.log('[Supabase] Fetching app setting:', key);
+    
+    const { data, error } = await getSupabase()
+      .from('app_settings')
+      .select('value')
+      .eq('key', key)
+      .single();
+    
+    if (error) {
+      console.error('[Supabase] Get app setting error:', error.message);
+      Sentry.captureException(error, {
+        tags: { component: 'Supabase', action: 'getAppSetting' },
+        extra: { key },
+      });
+      throw error;
+    }
+    
+    const value = parseFloat(data?.value || '0');
+    console.log('[Supabase] App setting fetched:', key, '=', value);
+    return value;
+  } catch (error: any) {
+    console.error('[Supabase] Get app setting failed:', error);
+    Sentry.captureException(error, {
+      tags: { component: 'Supabase', action: 'getAppSetting' },
+      extra: { key, errorMessage: error?.message },
+    });
+    throw error;
+  }
+}
+
+/**
+ * Get delivery fee from app settings
+ * Falls back to default value if not found
+ * 
+ * @returns {Promise<number>} Delivery fee
+ */
+export async function getDeliveryFee(): Promise<number> {
+  try {
+    const fee = await getAppSetting('delivery_fee');
+    return fee;
+  } catch (error: any) {
+    console.warn('[Supabase] Failed to fetch delivery fee, using default:', 50);
+    // Return default value if fetch fails
+    return 50;
+  }
+}
+
+/**
+ * Get discount amount from app settings
+ * Falls back to default value if not found
+ * 
+ * @returns {Promise<number>} Discount amount
+ */
+export async function getDiscount(): Promise<number> {
+  try {
+    const discount = await getAppSetting('discount');
+    return discount;
+  } catch (error: any) {
+    console.warn('[Supabase] Failed to fetch discount, using default:', 15);
+    // Return default value if fetch fails
+    return 15;
+  }
+}
+
+// ============================================================================
 // PROFILE FUNCTIONS
 // ============================================================================
 
