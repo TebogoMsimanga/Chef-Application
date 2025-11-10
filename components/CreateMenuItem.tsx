@@ -1,56 +1,61 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
 } from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
-import CustomHeader from "./CustomHeader";
-import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
-import {CreateMenuItemParams, CreateMenuItemProps} from "@/type";
+import CustomHeader from "./CustomHeader";
+import { createMenuItem, getCategories } from "@/lib/supabase";
 import * as ImagePicker from "expo-image-picker";
-import {appwriteConfig, createMenuItem, storage} from "@/lib/appwrite";
-import {ID} from "react-native-appwrite";
+import { Picker } from "@react-native-picker/picker";
+
+interface CreateMenuItemProps {
+  onSuccess?: () => void;
+}
 
 const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
-  const [selectedAsset, setSelectedAsset] =
-    useState<ImagePicker.ImagePickerAsset | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState<CreateMenuItemParams>({
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [imageUri, setImageUri] = useState<string>("");
+  const [form, setForm] = useState({
     name: "",
-    price: 0,
-    image_id: "",
-    image_url: "",
     description: "",
-    calories: 0,
-    protein: 0,
-    rating: 0,
-    type: "",
-    category: "",
+    price: "",
+    category_id: "",
+    ingredients: "",
+    rating: "4.5",
+    calories: "",
+    protein: "",
   });
 
-  const handleInputChange = (
-    field: keyof CreateMenuItemParams,
-    value: string | number
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data || []);
+      if (data && data.length > 0) {
+        setForm((prev) => ({ ...prev, category_id: data[0].id }));
+      }
+    } catch (error) {
+      console.error("Error loading categories:", error);
+    }
   };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
     if (status !== "granted") {
-      Alert.alert(
-        "Permission Denied",
-        "We need photo library access to select images."
-      );
+      Alert.alert("Permission needed", "Please grant camera roll permissions");
       return;
     }
 
@@ -58,237 +63,241 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setSelectedAsset(result.assets[0]);
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
-
-    // Basic validation
-    if (!formData.name || formData.price <= 0) {
-      Alert.alert("Error", "Name and a valid price are required.");
+    if (
+      !form.name ||
+      !form.description ||
+      !form.price ||
+      !form.category_id
+    ) {
+      Alert.alert("Error", "Please fill in all required fields");
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      let imageId = "";
+      setLoading(true);
 
-      if (selectedAsset) {
-        const file = {
-          uri: selectedAsset.uri,
-          name: selectedAsset.fileName || "menu-image.jpg",
-          type: selectedAsset.type || "image/jpeg", // Fallback to jpeg
-          size: selectedAsset.fileSize || 0,
-        };
+      const ingredientsArray = form.ingredients
+        .split(",")
+        .map((i) => i.trim())
+        .filter((i) => i);
 
-        const uploadedFile = await storage.createFile(
-          appwriteConfig.bucketId,
-          ID.unique(),
-          file
-        );
+      const menuItem = {
+        name: form.name,
+        description: form.description,
+        price: parseFloat(form.price),
+        category_id: form.category_id,
+        ingredients: ingredientsArray,
+        rating: parseFloat(form.rating),
+        calories: parseInt(form.calories) || 0,
+        protein: parseInt(form.protein) || 0,
+        image: imageUri || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80`,
+      };
 
-        imageId = uploadedFile.$id;
-      }
+      await createMenuItem(menuItem);
 
-      const updatedFormData = { ...formData, image_id: imageId };
-      await createMenuItem(updatedFormData);
-
-      // Reset form
-      setFormData({
+      Alert.alert("Success", "Menu item created successfully!");
+      
+      setForm({
         name: "",
-        price: 0,
-        image_id: "",
-        image_url: "",
         description: "",
-        calories: 0,
-        protein: 0,
-        rating: 0,
-        type: "",
-        category: "",
+        price: "",
+        category_id: categories[0]?.id || "",
+        ingredients: "",
+        rating: "4.5",
+        calories: "",
+        protein: "",
       });
-      setSelectedAsset(null);
-
-      onSuccess?.();
-      Alert.alert("Success", "Menu item added!");
+      setImageUri("");
+      
+      if (onSuccess) onSuccess();
     } catch (error: any) {
-      console.error("Submit error details:", JSON.stringify(error, null, 2)); // Enhanced logging
-      Alert.alert("Error", error.message || "Failed to add menu item.");
+      Alert.alert("Error", error.message);
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.card}>
-            <CustomHeader title="Edit Menu Item" />
+    <ScrollView contentContainerStyle={styles.container}>
+      <CustomHeader title="Add Menu Item" />
 
-            <View style={styles.inputsContainer}>
-              <CustomInput
-                label="Name"
-                placeholder="e.g., Grilled Salmon"
-                value={formData.name}
-                onChangeText={(text) => handleInputChange("name", text)}
-              />
-              <CustomInput
-                label="Category"
-                placeholder="e.g., Supper"
-                value={formData.category}
-                onChangeText={(text) => handleInputChange("category", text)}
-              />
-              <CustomInput
-                label="Type"
-                placeholder="e.g., Main Course"
-                value={formData.type}
-                onChangeText={(text) => handleInputChange("type", text)}
-              />
-              <CustomInput
-                label="Price (R)"
-                placeholder="0.00"
-                value={formData.price.toString()}
-                onChangeText={(text) =>
-                  handleInputChange("price", parseFloat(text) || 0)
-                }
-                keyboardType="numeric"
-              />
-              <CustomInput
-                label="Description"
-                placeholder="Brief description..."
-                value={formData.description}
-                onChangeText={(text) => handleInputChange("description", text)}
-                multiline // Now typed properly
-              />
-              <CustomInput
-                label="Calories"
-                placeholder="0"
-                value={formData.calories.toString()}
-                onChangeText={(text) =>
-                  handleInputChange("calories", parseFloat(text) || 0)
-                }
-                keyboardType="numeric"
-              />
-              <CustomInput
-                label="Protein (g)"
-                placeholder="0"
-                value={formData.protein.toString()}
-                onChangeText={(text) =>
-                  handleInputChange("protein", parseFloat(text) || 0)
-                }
-                keyboardType="numeric"
-              />
-              <CustomInput
-                label="Rating (1–5)"
-                placeholder="0"
-                value={formData.rating.toString()}
-                onChangeText={(text) =>
-                  handleInputChange("rating", parseFloat(text) || 0)
-                }
-                keyboardType="numeric"
-              />
+      <View style={styles.form}>
+        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.imagePlaceholderText}>Tap to add image</Text>
             </View>
+          )}
+        </TouchableOpacity>
 
-            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-              {selectedAsset ? (
-                <Image
-                  source={{ uri: selectedAsset.uri }}
-                  style={styles.previewImage}
-                />
-              ) : (
-                <View style={styles.placeholder}>
-                  <Text style={styles.placeholderText}>
-                    Tap to select image
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+        <Text style={styles.label}>Name *</Text>
+        <TextInput
+          style={styles.input}
+          value={form.name}
+          onChangeText={(text) => setForm({ ...form, name: text })}
+          placeholder="Enter item name"
+        />
 
-            <CustomButton
-              title={isSubmitting ? "Adding..." : "Add Menu Item"}
-              onPress={handleSubmit}
-              isLoading={isSubmitting}
-              style={styles.submitButton}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <Text style={styles.label}>Description *</Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          value={form.description}
+          onChangeText={(text) => setForm({ ...form, description: text })}
+          placeholder="Enter description"
+          multiline
+          numberOfLines={4}
+        />
+
+        <Text style={styles.label}>Price (R) *</Text>
+        <TextInput
+          style={styles.input}
+          value={form.price}
+          onChangeText={(text) => setForm({ ...form, price: text })}
+          placeholder="0.00"
+          keyboardType="decimal-pad"
+        />
+
+        <Text style={styles.label}>Category *</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={form.category_id}
+            onValueChange={(value) =>
+              setForm({ ...form, category_id: value })
+            }
+            style={styles.picker}
+          >
+            {categories.map((cat) => (
+              <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
+            ))}
+          </Picker>
+        </View>
+
+        <Text style={styles.label}>Ingredients (comma separated)</Text>
+        <TextInput
+          style={styles.input}
+          value={form.ingredients}
+          onChangeText={(text) => setForm({ ...form, ingredients: text })}
+          placeholder="e.g. cheese, tomato, lettuce"
+        />
+
+        <Text style={styles.label}>Calories</Text>
+        <TextInput
+          style={styles.input}
+          value={form.calories}
+          onChangeText={(text) => setForm({ ...form, calories: text })}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
+
+        <Text style={styles.label}>Protein (g)</Text>
+        <TextInput
+          style={styles.input}
+          value={form.protein}
+          onChangeText={(text) => setForm({ ...form, protein: text })}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
+
+        <Text style={styles.label}>Rating</Text>
+        <TextInput
+          style={styles.input}
+          value={form.rating}
+          onChangeText={(text) => setForm({ ...form, rating: text })}
+          placeholder="4.5"
+          keyboardType="decimal-pad"
+        />
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#FE8C00" style={{ marginTop: 20 }} />
+        ) : (
+          <CustomButton
+            title="Create Menu Item"
+            onPress={handleSubmit}
+            style={styles.button}
+          />
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
-export default CreateMenuItem;
-
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#FAFAFA",
+  container: {
+    padding: 20,
+    paddingBottom: 40,
   },
-  scrollContainer: {
-    paddingBottom: 60,
-  },
-  card: {
-    backgroundColor: "#FFF",
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  inputsContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 16, // same as space-y-4
-    marginTop: 12,
-  },
-  imagePicker: {
-    height: 200,
-    borderWidth: 2,
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
-    borderStyle: "dashed",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    marginTop: 24,
-  },
-  previewImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 12,
-  },
-  placeholder: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeholderText: {
-    fontSize: 15,
-    color: "#9CA3AF",
-    fontFamily: "Quicksand-Medium",
-  },
-  submitButton: {
-    backgroundColor: "#FE8C00",
-    borderRadius: 30,
-    paddingVertical: 14,
+  form: {
     marginTop: 20,
   },
+  imagePicker: {
+    width: "100%",
+    height: 200,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    borderStyle: "dashed",
+  },
+  imagePlaceholderText: {
+    fontSize: 16,
+    fontFamily: "Quicksand-Medium",
+    color: "#9CA3AF",
+  },
+  label: {
+    fontSize: 14,
+    fontFamily: "Quicksand-SemiBold",
+    color: "#1A1A1A",
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    fontFamily: "Quicksand-Medium",
+    color: "#1A1A1A",
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  picker: {
+    height: 50,
+  },
+  button: {
+    marginTop: 24,
+  },
 });
+
+export default CreateMenuItem;

@@ -1,71 +1,63 @@
-import {account, getCurrentUser} from "@/lib/appwrite";
-import {User} from "@/type";
-import * as Sentry from "@sentry/react-native";
-import {create} from "zustand";
+import { create } from 'zustand';
+import { getCurrentUser, signOut, getSupabase } from '@/lib/supabase';
 
-type AuthState = {
-  isAuthenticated: boolean;
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  about?: string;
+  avatar?: string;
+}
+
+interface AuthStore {
   user: User | null;
   isLoading: boolean;
-
-  setIsAuthenticated: (value: boolean) => void;
+  isAuthenticated: boolean;
   setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
-
   fetchAuthenticatedUser: () => Promise<void>;
   logout: () => Promise<void>;
-};
+}
 
-const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: false,
+const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   isLoading: true,
+  isAuthenticated: false,
 
-  setIsAuthenticated: (value) => set({ isAuthenticated: value }),
-  setUser: (user) => set({ user }),
-  setLoading: (value) => set({ isLoading: value }),
+  setUser: (user) => set({ user, isAuthenticated: !!user }),
 
   fetchAuthenticatedUser: async () => {
-    set({ isLoading: true });
-
     try {
+      set({ isLoading: true });
       const user = await getCurrentUser();
-
-      if (user) {
-        set({
-          isAuthenticated: true,
-          user: user as unknown as User,
-          isLoading: false,
-        });
-      } else {
-        set({
-          isAuthenticated: false,
-          user: null,
-          isLoading: false,
-        });
-      }
-    } catch (error: any) {
-      Sentry.captureEvent(error);
-      set({
-        isAuthenticated: false,
-        user: null,
-        isLoading: false,
-      });
+      set({ user, isAuthenticated: !!user, isLoading: false });
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
   logout: async () => {
     try {
-      await account.deleteSession("current");
-      set({
-        isAuthenticated: false,
-        user: null,
-      });
-    } catch (error: any) {
-      Sentry.captureEvent(error);
-      throw new Error(error);
+      await signOut();
+      set({ user: null, isAuthenticated: false });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
     }
   },
 }));
+
+// Listen to auth state changes - only on client side
+if (typeof window !== 'undefined') {
+  getSupabase().auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      useAuthStore.getState().fetchAuthenticatedUser();
+    } else if (event === 'SIGNED_OUT') {
+      useAuthStore.setState({ user: null, isAuthenticated: false });
+    }
+  });
+}
 
 export default useAuthStore;

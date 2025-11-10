@@ -47,3 +47,7 @@ app-example
 .env.local
 
 .env.local
+
+# Tempo
+**/tempobook/dynamic/
+**/tempobook/storyboards/
