@@ -56,12 +56,14 @@ export default function TabLayout() {
           height: 80,
           position: "absolute",
           bottom: 40,
-          backgroundColor: "white",
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
           shadowColor: "#1a1a1a",
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 5,
+          borderTopWidth: 0,
+          zIndex: 1000,
         },
       }}
     >

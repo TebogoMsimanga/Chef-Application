@@ -1,7 +1,6 @@
 import {StyleProp, TextStyle, ViewStyle} from "react-native";
-import {Models} from "react-native-appwrite";
 
-export interface MenuItem extends Models.Document {
+export interface MenuItem {
   $id: string;
   name: string;
   price: number;
@@ -14,7 +13,7 @@ export interface MenuItem extends Models.Document {
   type: string;
 }
 
-export interface CustomizationItem extends Models.Document {
+export interface CustomizationItem {
   $id: string;
   name: string;
   price: number;
@@ -23,18 +22,19 @@ export interface CustomizationItem extends Models.Document {
   type: string;
 }
 
-export interface Customization extends Models.Document {
+export interface Customization {
   name: string;
   price: number;
   type: string;
 }
 
-export interface Category extends Models.Document {
+export interface Category {
+  id: string;
   name: string;
   description: string;
 }
 
-export interface User extends Models.Document {
+export interface User {
   account: string;
   name: string;
   email: string;
@@ -49,7 +49,7 @@ export interface CartCustomization {
 }
 
 export interface CartItemType {
-  id: string; // menu item id
+  id: string; 
   name: string;
   price: number;
   image_url: string;
@@ -82,10 +82,13 @@ interface CustomButtonProps {
   leftIcon?: React.ReactNode;
   textStyle?: StyleProp<TextStyle>;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 interface CustomHeaderProps {
   title?: string;
+  showLogout?: boolean;
+  onLogout?: () => void;
 }
 
 interface CustomInputProps {
@@ -152,4 +155,5 @@ interface FavoritesStore {
     isFavorite: (id: string) => boolean;
     clearFavorites: () => void;
     getTotalFavorites: () => number;
+    initializeFavorites: (favoriteIds: string[]) => void;
 };

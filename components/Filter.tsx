@@ -1,7 +1,7 @@
 import {FlatList, StyleSheet, Text, TouchableOpacity,} from "react-native";
 import React, {useState} from "react";
-import {Category} from "@/type";
 import {router, useLocalSearchParams} from "expo-router";
+import { Category } from "@/type";
 
 const Filter = ({ categories }: { categories: Category[] }) => {
   const searchParams = useLocalSearchParams();
@@ -15,30 +15,30 @@ const Filter = ({ categories }: { categories: Category[] }) => {
     else router.setParams({ category: id});
   };
 
-  const filterData: (Category | { $id: string; name: string })[] = categories
-    ? [{ $id: "all", name: "All" }, ...categories]
-    : [{ $id: "all", name: "All" }];
+  const filterData: (Category | { id: string; name: string })[] = categories
+    ? [{ id: "all", name: "All" }, ...categories]
+    : [{ id: "all", name: "All" }];
 
   return (
     <FlatList
       data={filterData}
-      keyExtractor={(item) => item.$id}
+      keyExtractor={(file) => file.id}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
       renderItem={({ item }) => (
         <TouchableOpacity
-          key={item.$id}
+
           style={[
             styles.filter,
-            active === item.$id ? styles.active : styles.notActive,
+            active === item.id ? styles.active : styles.notActive,
           ]}
-          onPress={() => handlePress(item.$id)}
+          onPress={() => handlePress(item.id)}
         >
           <Text
             style={[
               styles.name,
-              active === item.$id ? styles.nameActive : styles.nameNotActive,
+              active === item.id ? styles.nameActive : styles.nameNotActive,
             ]}
           >
             {item.name}

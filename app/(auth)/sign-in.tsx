@@ -1,33 +1,70 @@
+/**
+ * Sign In Screen
+ * 
+ * Allows users to sign in with email and password.
+ * Handles authentication with Supabase and error tracking with Sentry.
+ * 
+ * @component
+ */
+
 import {Alert, StyleSheet, Text, View} from "react-native";
 import React, {useState} from "react";
 import {Link, router} from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
-import {signIn} from "@/lib/appwrite";
-import * as Sentry from "@sentry/react-native";
+import {signIn} from "@/lib/supabase";
 
 const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
 
+  /**
+   * Handle sign in submission
+   * Validates form, signs in user, and navigates to home
+   */
   const submit = async () => {
-    if (!form.email || !form.password)
-      return Alert.alert(
+    console.log("[SignIn] Sign in attempt started");
+    
+    // Validate form inputs
+    if (!form.email || !form.password) {
+      console.warn("[SignIn] Validation failed: missing email or password");
+      Alert.alert(
         "Error",
         "Please enter valid email address & password."
       );
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
+      console.log("[SignIn] Signing in user:", form.email);
+      
       await signIn({ email: form.email, password: form.password });
 
+      console.log("[SignIn] Sign in successful, navigating to home");
       router.replace("/");
     } catch (error: any) {
-      Alert.alert("Error", error.message);
-      Sentry.captureEvent(error);
+      console.error("[SignIn] Sign in error:", error);
+      
+      // Log to Sentry with context
+      Sentry.captureException(error, {
+        tags: {
+          component: "SignIn",
+          action: "signIn",
+        },
+        extra: {
+          email: form.email,
+          errorMessage: error?.message,
+          errorCode: error?.code,
+        },
+      });
+      
+      Alert.alert("Error", error.message || "Failed to sign in. Please try again.");
     } finally {
       setIsSubmitting(false);
+      console.log("[SignIn] Sign in attempt completed");
     }
   };
 

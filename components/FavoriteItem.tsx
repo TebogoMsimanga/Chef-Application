@@ -1,131 +1,176 @@
-import {useCartStore} from "@/store/cart.store";
-import {useFavoritesStore} from "@/store/favorite.store";
-import {MenuItem} from "@/type";
-import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {images} from "@/constants";
+/**
+ * Favorite Item Component
+ * 
+ * Displays a favorite menu item with:
+ * - Item image, name, description, price
+ * - Remove from favorites button
+ * - Navigation to item details
+ * 
+ * @component
+ */
 
-const FavoriteItem = ({ item, onRemove }: { item: MenuItem; onRemove: (id: string) => void }) => {
-  const { addItem } = useCartStore();
-  const { removeFavorite } = useFavoritesStore();
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import { images } from "@/constants";
+import { router } from "expo-router";
+import * as Sentry from "@sentry/react-native";
+import { removeFavorite } from "@/lib/supabase";
+import useAuthStore from "@/store/auth.store";
+import { useFavoritesStore } from "@/store/favorite.store";
 
-  const handleRemove = () => {
-    onRemove(item.$id);  
-    removeFavorite(item.$id);  
+interface FavoriteItemProps {
+  item: any;
+  onRemove?: () => void;
+}
+
+const FavoriteItem = ({ item, onRemove }: FavoriteItemProps) => {
+  const { user } = useAuthStore();
+  const { removeFavorite: removeFromStore } = useFavoritesStore();
+
+  /**
+   * Handle removing item from favorites
+   * Removes from Supabase and updates local state
+   */
+  const handleRemove = async () => {
+    try {
+      if (!user?.id) {
+        console.warn("[FavoriteItem] User not authenticated");
+        return;
+      }
+
+      if (!item?.id) {
+        console.error("[FavoriteItem] Item ID missing");
+        return;
+      }
+
+      console.log("[FavoriteItem] Removing favorite:", item.id);
+
+      // Update database first
+      await removeFavorite(user.id, item.id);
+      
+      // Then update local store (this will trigger re-renders everywhere)
+      removeFromStore(item.id);
+      
+      console.log("[FavoriteItem] Favorite removed successfully");
+      
+      // Call onRemove callback to refresh list
+      if (onRemove) {
+        onRemove();
+      }
+    } catch (error: any) {
+      console.error("[FavoriteItem] Error removing favorite:", error);
+      
+      // Log to Sentry
+      Sentry.captureException(error, {
+        tags: { component: "FavoriteItem", action: "handleRemove" },
+        extra: { itemId: item.id, userId: user?.id, errorMessage: error?.message },
+      });
+
+      Alert.alert("Error", error.message || "Failed to remove favorite. Please try again.");
+    }
+  };
+
+  /**
+   * Handle navigation to item details
+   */
+  const handlePress = () => {
+    try {
+      console.log("[FavoriteItem] Navigating to item details:", item.id);
+      router.push(`/MenuItemDetail?id=${item.id}`);
+    } catch (error: any) {
+      console.error("[FavoriteItem] Error navigating:", error);
+      Sentry.captureException(error, {
+        tags: { component: "FavoriteItem", action: "handlePress" },
+        extra: { itemId: item.id },
+      });
+    }
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.left}>
-        <View style={styles.imageWrapper}>
-          <Image
-            source={{ uri: item.image_url }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        </View>
-
-        <View style={styles.info}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
-
-          <TouchableOpacity
-            onPress={() => addItem({
-              id: item.$id,
-              name: item.name,
-              price: item.price,
-              image_url: item.image_url,
-              customizations: [],
-            })}
-            style={styles.addBtn}
-          >
-            <Text style={styles.addText}>Add to Cart</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       <TouchableOpacity
-        onPress={handleRemove}
-        style={styles.deleteBtn}
+        style={styles.content}
+        onPress={handlePress}
       >
         <Image
+          source={{ uri: item.image || images.placeholder }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <View style={styles.details}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text style={styles.description} numberOfLines={2}>
+            {item.description}
+          </Text>
+          <Text style={styles.price}>R {item.price?.toFixed(2)}</Text>
+        </View>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={styles.removeButton} onPress={handleRemove}>
+        <Image
           source={images.trash}
-          style={styles.deleteIcon}
-          resizeMode="contain"
+          style={styles.removeIcon}
+          tintColor="#EF4444"
         />
       </TouchableOpacity>
     </View>
   );
 };
-export default FavoriteItem;
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginTop: 10,
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 16,
     backgroundColor: "#fff",
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 12,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    alignItems: "center",
   },
-  left: {
+  content: {
+    flex: 1,
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  imageWrapper: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 152, 1, 0.1)",
-    justifyContent: "center",
-    alignItems: "center",
   },
   image: {
-    width: "80%",
-    height: "80%",
-    borderRadius: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 8,
   },
-  info: {
+  details: {
+    flex: 1,
+    marginLeft: 12,
     justifyContent: "center",
   },
   name: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 16,
+    fontFamily: "Quicksand-Bold",
+    color: "#1A1A1A",
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 12,
+    fontFamily: "Quicksand-Medium",
+    color: "#666",
+    marginBottom: 8,
   },
   price: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#FF9C01",
-    marginTop: 4,
+    fontFamily: "Quicksand-Bold",
+    color: "#FE8C00",
   },
-  addBtn: {
-    marginTop: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: "#FF9C01",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  addText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  deleteBtn: {
-    justifyContent: "center",
-    alignItems: "center",
+  removeButton: {
     padding: 8,
   },
-  deleteIcon: {
+  removeIcon: {
     width: 24,
     height: 24,
   },
 });
+
+export default FavoriteItem;

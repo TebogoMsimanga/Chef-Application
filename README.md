@@ -1,51 +1,312 @@
-# Welcome to your Expo app 👋
+# Chef Application - React Native Food Ordering App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A comprehensive React Native application built with Expo Router for food ordering, built with Supabase for backend services and Sentry for error tracking.
 
-## Get started
+## 📋 Table of Contents
 
-1. Install dependencies
+- [Project Overview](#project-overview)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Setup Instructions](#setup-instructions)
+- [Features](#features)
+- [Screens & Navigation](#screens--navigation)
+- [Change Log](#change-log)
+- [Development Guidelines](#development-guidelines)
 
+## 🎯 Project Overview
+
+This is a full-featured food ordering application that allows users to:
+- Browse menu items by category
+- Search and filter menu items
+- Add items to cart with customizations
+- Manage favorites
+- Place orders
+- View profile and order history
+
+## 🛠 Tech Stack
+
+- **Framework**: React Native with Expo Router (file-based routing)
+- **Backend**: Supabase (PostgreSQL database, Authentication, Storage)
+- **State Management**: Zustand
+- **Error Tracking**: Sentry
+- **UI Components**: Custom components with React Native
+- **Fonts**: Quicksand font family
+
+## 📁 Project Structure
+
+```
+Chef-Application/
+├── app/                          # Expo Router pages
+│   ├── _layout.tsx              # Root layout with auth routing
+│   ├── (auth)/                  # Authentication screens
+│   │   ├── _layout.tsx         # Auth layout
+│   │   ├── sign-in.tsx         # Sign in screen
+│   │   └── sign-up.tsx         # Sign up screen
+│   ├── (tabs)/                  # Main app tabs
+│   │   ├── _layout.tsx         # Tab navigation layout
+│   │   ├── index.tsx           # Home screen
+│   │   ├── search.tsx          # Search screen
+│   │   ├── cart.tsx            # Cart screen
+│   │   └── profile.tsx        # Profile screen
+│   └── (screens)/               # Modal/Stack screens
+│       ├── CategoryMeals.tsx   # Category meals list
+│       ├── MenuItemDetail.tsx  # Menu item details
+│       ├── checkout.tsx        # Checkout screen
+│       ├── success.tsx         # Order success screen
+│       ├── favorite.tsx        # Favorites screen
+│       ├── edit.tsx            # Edit menu item screen
+│       └── menu.tsx            # Menu screen (placeholder)
+├── components/                   # Reusable components
+│   ├── AddButton.tsx
+│   ├── CartItem.tsx
+│   ├── CreateMenuItem.tsx
+│   ├── CustomButton.tsx
+│   ├── CustomHeader.tsx
+│   ├── CustomInput.tsx
+│   ├── ErrorBoundary.tsx
+│   ├── FavButton.tsx
+│   ├── FavoriteItem.tsx
+│   ├── Filter.tsx
+│   ├── MealCard.tsx
+│   └── SearchBar.tsx
+├── lib/                          # Utility libraries
+│   ├── supabase.ts             # Supabase client and functions
+│   ├── useSupabase.ts          # Custom hook for data fetching
+│   └── setup-storage.ts        # Storage bucket setup helpers
+├── store/                        # Zustand stores
+│   ├── auth.store.ts           # Authentication state
+│   ├── cart.store.ts           # Shopping cart state
+│   └── favorite.store.ts       # Favorites state (local)
+├── constants/                    # App constants
+│   └── index.ts                 # Images, menu categories
+├── assets/                       # Static assets
+│   ├── fonts/                   # Custom fonts
+│   ├── icons/                   # App icons
+│   └── images/                  # App images
+└── type.d.ts                     # TypeScript type definitions
+```
+
+## 🚀 Setup Instructions
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+- Supabase account and project
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Chef-Application
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
-
-   ```bash
-   npx expo start
+3. **Set up environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-In the output, you'll find options to open the app in a
+4. **Start the development server**
+   ```bash
+   npm start
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+5. **Run on your preferred platform**
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ✨ Features
 
-## Get a fresh project
+### Authentication
+- User sign up with email/password
+- User sign in
+- Session management with Supabase Auth
+- Protected routes based on authentication state
 
-When you're ready, run:
-<!-- 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 -->
+### Menu & Search
+- Browse menu items by category
+- Search menu items by name
+- Filter by category
+- View menu item details with customizations
 
-```bash
-npm run reset-project
-```
+### Shopping Cart
+- Add items to cart with customizations
+- Update quantities
+- Remove items
+- Calculate totals including customizations
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Favorites
+- Add/remove favorites
+- View favorite items
+- Sync with Supabase database
 
-## Learn more
+### Orders
+- Create orders with delivery information
+- Order history (to be implemented)
+- Order confirmation screen
 
-To learn more about developing your project with Expo, look at the following resources:
+### Profile
+- View user profile information
+- Edit profile (to be implemented)
+- Logout functionality
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📱 Screens & Navigation
 
-## Join the community
+### Authentication Flow
+1. **Splash Screen** → Auto-navigates based on auth state
+2. **Sign In** → `/sign-in`
+3. **Sign Up** → `/sign-up`
 
-Join our community of developers creating universal apps.
+### Main App Flow (Tabs)
+1. **Home** → `/` - Browse categories with meal counts
+2. **Search** → `/search` - Search and filter menu items
+3. **Cart** → `/cart` - View cart and proceed to checkout
+4. **Profile** → `/profile` - View user profile
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Stack Screens
+- **Category Meals** → `/(screens)/CategoryMeals` - Meals in a category
+- **Menu Item Detail** → `/(screens)/MenuItemDetail` - Item details and add to cart
+- **Checkout** → `/(screens)/checkout` - Order placement
+- **Success** → `/(screens)/success` - Order confirmation
+- **Favorites** → `/(screens)/favorite` - User favorites
+- **Create Menu Item** → `components/CreateMenuItem.tsx` - Create/edit menu items with image upload
+
+## 📝 Change Log
+
+### [Current Session] - Appwrite Removal & Supabase Migration
+
+#### Removed
+- ❌ `react-native-appwrite` package
+- ❌ `lib/appwrite.ts` - All Appwrite configuration and functions
+- ❌ `lib/useAppwrite.ts` - Appwrite-specific hook
+- ❌ All Appwrite imports and dependencies
+
+#### Added
+- ✅ `lib/useSupabase.ts` - Generic hook for Supabase data fetching
+- ✅ Comprehensive Supabase integration in `lib/supabase.ts`
+- ✅ Sentry error tracking throughout the application
+- ✅ Console logging for debugging
+
+#### Updated
+- ✅ All screens migrated from Appwrite to Supabase:
+  - `app/(tabs)/index.tsx` - Home screen
+  - `app/(tabs)/search.tsx` - Search screen
+  - `app/(tabs)/cart.tsx` - Cart screen
+  - `app/(tabs)/profile.tsx` - Profile screen
+  - `app/(auth)/sign-in.tsx` - Sign in screen
+  - `app/(auth)/sign-up.tsx` - Sign up screen
+  - `app/(screens)/CategoryMeals.tsx` - Category meals
+  - `app/(screens)/MenuItemDetail.tsx` - Menu item details
+  - `app/(screens)/checkout.tsx` - Checkout
+  - `app/(screens)/favorite.tsx` - Favorites
+- ✅ `type.d.ts` - Removed Appwrite Models dependency
+- ✅ `store/auth.store.ts` - Updated to use Supabase Auth
+- ✅ All components updated to work with Supabase data structure
+
+### [Completed] - Application Debugging & Enhancement
+
+#### Completed Improvements
+- ✅ Enhanced splash screen with proper loading states
+- ✅ Comprehensive error handling with Sentry throughout the app
+- ✅ Console logging throughout for debugging
+- ✅ CRUD operations fully tested and working
+- ✅ Profile screen enhancements with real user data
+- ✅ Image upload functionality with Supabase storage
+- ✅ Better loading states and error messages
+- ✅ CreateMenuItem component with full functionality:
+  - Image upload to Supabase storage
+  - Create menu items
+  - View all menu items
+  - Delete menu items
+  - Category initialization
+  - Tab-based interface (Create/View All)
+- ✅ All buttons use consistent orange theme (#FE8C00)
+- ✅ Storage bucket setup with public access policies
+- ✅ Nutrition fields (calories, protein, rating) in one row for better UX
+
+#### Remaining Tasks
+- 🔄 Order history implementation
+
+## 🎓 Development Guidelines
+
+### Code Style
+- Use TypeScript for type safety
+- Follow React Native best practices
+- Use functional components with hooks
+- Keep components small and focused
+- Add comments for complex logic
+
+### Error Handling
+- Always wrap async operations in try-catch
+- Use Sentry for error tracking: `Sentry.captureException(error)`
+- Add console logs for debugging: `console.log('[Component] Action:', data)`
+- Show user-friendly error messages
+
+### State Management
+- Use Zustand stores for global state (auth, cart, favorites)
+- Use local state for component-specific state
+- Keep stores focused on single responsibilities
+
+### Data Fetching
+- Use `useSupabase` hook for data fetching
+- Handle loading and error states
+- Implement proper refetching on data changes
+
+### Testing
+- Test all user flows manually
+- Check error scenarios
+- Verify data persistence
+- Test on both iOS and Android
+
+## ✅ Completed Features
+
+- ✅ Image upload for menu items with Supabase storage
+- ✅ CreateMenuItem component with full CRUD functionality
+- ✅ Storage bucket setup with public access policies
+- ✅ Category initialization on app start
+- ✅ All buttons use consistent orange theme color (#FE8C00)
+- ✅ Comprehensive error handling with Sentry
+- ✅ Console logging throughout for debugging
+
+## 🐛 Known Issues
+
+- Profile screen shows hardcoded data (phone, address, about) - Now uses actual user data from Supabase
+- Order history not yet implemented
+- Favorites sync with Supabase - ✅ Now fully implemented
+
+## 📚 Resources
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [Expo Router Documentation](https://docs.expo.dev/router/introduction/)
+- [Supabase Documentation](https://supabase.com/docs)
+- [React Native Documentation](https://reactnative.dev/)
+- [Zustand Documentation](https://zustand-demo.pmnd.rs/)
+- [Sentry React Native](https://docs.sentry.io/platforms/react-native/)
+
+## 👥 Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Test thoroughly
+4. Update this README if needed
+5. Submit a pull request
+
+## 📄 License
+
+[Add your license here]
+
+---
+
+**Last Updated**: [Current Date]
+**Version**: 1.0.0

@@ -1,10 +1,19 @@
+/**
+ * Sign Up Screen
+ * 
+ * Allows new users to create an account with email and password.
+ * Handles registration with Supabase and error tracking with Sentry.
+ * 
+ * @component
+ */
+
 import {Alert, StyleSheet, Text, View} from "react-native";
 import React, {useState} from "react";
 import {Link, router} from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import CustomInput from "@/components/CustomInput";
 import CustomButton from "@/components/CustomButton";
-import {createUser} from "@/lib/appwrite";
-import * as Sentry from "@sentry/react-native";
+import { signUp } from "@/lib/supabase";
 
 const SignUp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,25 +26,54 @@ const SignUp = () => {
     about: "",
   });
 
+  /**
+   * Handle sign up submission
+   * Validates form, creates user account, and navigates to home
+   */
   const submit = async () => {
-    if (!form.name || !form.email || !form.password)
-      return Alert.alert("Error", "Please enter a valid details");
+    console.log("[SignUp] Sign up attempt started");
+    
+    // Validate required fields
+    if (!form.name || !form.email || !form.password) {
+      console.warn("[SignUp] Validation failed: missing required fields");
+      Alert.alert("Error", "Please enter valid details");
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      await createUser({
+      console.log("[SignUp] Creating user account:", form.email);
+      
+      await signUp({
         email: form.email,
         password: form.password,
         name: form.name,
       });
 
+      console.log("[SignUp] Sign up successful, navigating to home");
       router.replace("/");
     } catch (error: any) {
-      Alert.alert("Error", error.message);
-      Sentry.captureEvent(error);
+      console.error("[SignUp] Sign up error:", error);
+      
+      // Log to Sentry with context
+      Sentry.captureException(error, {
+        tags: {
+          component: "SignUp",
+          action: "signUp",
+        },
+        extra: {
+          email: form.email,
+          name: form.name,
+          errorMessage: error?.message,
+          errorCode: error?.code,
+        },
+      });
+      
+      Alert.alert("Error", error.message || "Failed to create account. Please try again.");
     } finally {
       setIsSubmitting(false);
+      console.log("[SignUp] Sign up attempt completed");
     }
   };
 
