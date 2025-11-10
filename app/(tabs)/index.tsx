@@ -1,20 +1,13 @@
 import AddButton from "@/components/AddButton";
-import { images, menu } from "@/constants";
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import useAuthStore from "@/store/auth.store";
-import { StatusBar } from "expo-status-bar";
-import { getCategories, getMenu } from "@/lib/appwrite";
+import {images, menu} from "@/constants";
+import {getCategories, getMenu} from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
+import useAuthStore from "@/store/auth.store";
+import {router} from "expo-router";
+import {StatusBar} from "expo-status-bar";
+import React, {useEffect, useState} from "react";
+import {FlatList, Image, Pressable, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 
 export default function Index() {
   const { user } = useAuthStore();
@@ -57,14 +50,28 @@ export default function Index() {
         }
       });
 
-      console.log("Raw counts from DB categories (using names):", JSON.stringify(counts, null, 2));
+      console.log(
+        "Raw counts from DB categories (using names):",
+        JSON.stringify(counts, null, 2)
+      );
 
       const finalCategoryCounts = menu.reduce((acc, item) => {
         acc[item.title] = counts[item.title] || 0;
         return acc;
       }, {} as Record<string, number>);
 
-      console.log("Final categoryCounts for UI:", JSON.stringify(finalCategoryCounts, null, 2));
+      // Create a map from category title to category ID for navigation
+      const categoryNameToIdMap: Record<string, string> = {};
+      categoriesData.forEach((cat) => {
+        categoryNameToIdMap[cat.name.toUpperCase()] = cat.$id;
+      });
+      // Store this map if needed elsewhere, or use it directly in the onPress
+      (Index as any).categoryNameToIdMap = categoryNameToIdMap;
+
+      console.log(
+        "Final categoryCounts for UI:",
+        JSON.stringify(finalCategoryCounts, null, 2)
+      );
       setCategoryCounts(finalCategoryCounts);
     }
   }, [allMenus, loading, categoriesData]);
@@ -90,6 +97,10 @@ export default function Index() {
                   { backgroundColor: item.color },
                 ]}
                 android_ripple={{ color: "rgba(255, 255, 255, 0.13)" }}
+                onPress={() => {
+                  const categoryId = (Index as any).categoryNameToIdMap[item.title];
+                  router.push(`/(screens)/CategoryMeals?category=${item.title}&categoryId=${categoryId}`);
+                }}
               >
                 <View style={{ width: "50%", height: "100%" }}>
                   <Image

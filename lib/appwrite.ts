@@ -1,19 +1,6 @@
-import {
-  CreateMenuItemParams,
-  CreateUserPrams,
-  GetMenuParams,
-  SignInParams,
-} from "@/type";
+import {CreateMenuItemParams, CreateUserPrams, SignInParams,} from "@/type";
 import * as Sentry from "@sentry/react-native";
-import {
-  Account,
-  Avatars,
-  Client,
-  Databases,
-  ID,
-  Query,
-  Storage,
-} from "react-native-appwrite";
+import {Account, Avatars, Client, Databases, ID, Query, Storage,} from "react-native-appwrite";
 
 export const appwriteConfig = {
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
@@ -249,5 +236,71 @@ export const createMenuItem = async ({
   } catch (e) {
     Sentry.captureEvent(e as any);
     throw new Error(e as string);
+  }
+};
+
+export const getMenuItem = async ({ id }: { id: string }) => {
+  try {
+    const menuItem = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.menuTable,
+      id
+    );
+
+    const processedMenuItem = {
+      name: menuItem.name,
+      price: menuItem.price,
+      image_id: menuItem.image_id,
+      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${menuItem.image_id}/view?project=${appwriteConfig.projectId}`,
+      description: menuItem.description,
+      calories: menuItem.calories,
+      protein: menuItem.protein,
+      rating: menuItem.rating,
+      type: menuItem.type || "default",
+      category: menuItem.category,
+      $id: menuItem.$id,
+      $createdAt: menuItem.$createdAt,
+      $updatedAt: menuItem.$updatedAt,
+      $permissions: menuItem.$permissions,
+      $collectionId: menuItem.$collectionId,
+      $databaseId: menuItem.$databaseId,
+      $sequence: menuItem.$sequence,
+    };
+
+    return processedMenuItem;
+  } catch (error) {
+    console.error("Error fetching menu item:", error);
+    throw new Error(error as string);
+  }
+};
+
+export const getCustomizationsForMenu = async ({ menuId }: { menuId: string }) => {
+  try {
+    const customizations = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.customizationTable,
+      [Query.orderAsc("name")] // Temporarily remove menu_id query
+    );
+
+    const processedCustomizations = customizations.documents.map((cust) => ({
+      name: cust.name,
+      price: cust.price,
+      image_id: cust.image_id,
+      image_url: `${appwriteConfig.endpoint}/storage/buckets/${appwriteConfig.bucketId}/files/${cust.image_id}/view?project=${appwriteConfig.projectId}`,
+      type: cust.type,
+      // menu_id: menuId, // Removed menu_id as it's not in schema
+      $id: cust.$id,
+      $createdAt: cust.$createdAt,
+      $updatedAt: cust.$updatedAt,
+      $permissions: cust.$permissions,
+      $collectionId: cust.$collectionId,
+      $databaseId: cust.$databaseId,
+      $sequence: cust.$sequence,
+    }));
+
+    return processedCustomizations;
+  } catch (error) {
+    console.error("Error fetching customizations:", error);
+    throw new Error(error as string);
   }
 };

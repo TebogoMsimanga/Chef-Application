@@ -1,8 +1,8 @@
-import { useCartStore } from "@/store/cart.store";
-import { useFavoritesStore } from "@/store/favorite.store";
-import { MenuItem } from "@/type";
-import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import { images } from "@/constants";
+import {useCartStore} from "@/store/cart.store";
+import {useFavoritesStore} from "@/store/favorite.store";
+import {MenuItem} from "@/type";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {images} from "@/constants";
 
 const FavoriteItem = ({ item, onRemove }: { item: MenuItem; onRemove: (id: string) => void }) => {
   const { addItem } = useCartStore();

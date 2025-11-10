@@ -31,6 +31,7 @@ import cheese from "@/assets/images/cheese.png";
 import coleslaw from "@/assets/images/coleslaw.png";
 import cucumber from "@/assets/images/cucumber.png";
 import emptyState from "@/assets/images/empty-state.png";
+import empty from "@/assets/images/empty.png"; // Assuming this is the placeholder
 import eye from "@/assets/images/eye.png";
 import fries from "@/assets/images/fries.png";
 import fav from "@/assets/images/fav.png";
@@ -44,6 +45,7 @@ import pizzaOne from "@/assets/images/pizza-one.png";
 import salad from "@/assets/images/salad.png";
 import success from "@/assets/images/success.png";
 import tomatoes from "@/assets/images/tomatoes.png";
+import placeholder from "@/assets/images/placeholder.png";
 
 export const categories = [
     {
@@ -190,6 +192,7 @@ export const images = {
     salad,
     success,
     tomatoes,
+    placeholder, // Ensure placeholder is exported
     arrowBack,
     arrowDown,
     arrowRight,
@@ -211,4 +214,5 @@ export const images = {
     star,
     trash,
     user,
+    empty, // Export empty as well if it's a placeholder
 };

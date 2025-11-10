@@ -1,5 +1,5 @@
-import { ID } from "react-native-appwrite";
-import { appwriteConfig, databases, storage } from "./appwrite";
+import {ID} from "react-native-appwrite";
+import {appwriteConfig, databases, storage} from "./appwrite";
 import dummyData from "./data";
 
 

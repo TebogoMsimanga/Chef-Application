@@ -1,5 +1,5 @@
-import { CartCustomization, CartStore } from "@/type";
-import { create } from "zustand";
+import {CartCustomization, CartStore} from "@/type";
+import {create} from "zustand";
 
 function areCustomizationsEqual(
     a: CartCustomization[] = [],

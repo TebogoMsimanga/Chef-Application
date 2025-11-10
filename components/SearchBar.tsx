@@ -1,14 +1,7 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import React, { useState } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-import { images } from "@/constants";
+import {Image, StyleSheet, TextInput, TouchableOpacity, View,} from "react-native";
+import React, {useState} from "react";
+import {router, useLocalSearchParams} from "expo-router";
+import {images} from "@/constants";
 
 const SearchBar = () => {
   const params = useLocalSearchParams<{ query?: string }>();

@@ -1,5 +1,5 @@
-import { FavoritesStore } from "@/type";
-import { create } from "zustand";
+import {FavoritesStore} from "@/type";
+import {create} from "zustand";
 
 
 export const useFavoritesStore = create<FavoritesStore>((set, get) => ({

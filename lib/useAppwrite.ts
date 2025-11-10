@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import {useCallback, useEffect, useState} from "react";
+import {Alert} from "react-native";
 
 interface UseAppwriteOptions<T, P extends Record<string, any>> { 
   fn: (params: P) => Promise<T>;

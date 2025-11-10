@@ -1,9 +1,9 @@
-import { images } from "@/constants";
-import { useCartStore } from "@/store/cart.store";
-import { TabBarIconProps } from "@/type";
-import { Tabs } from "expo-router";
+import {images} from "@/constants";
+import {useCartStore} from "@/store/cart.store";
+import {TabBarIconProps} from "@/type";
+import {Tabs} from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import {Image, StyleSheet, Text, View} from "react-native";
 
 const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => {
 
