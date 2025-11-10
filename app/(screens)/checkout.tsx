@@ -24,7 +24,7 @@ import CustomHeader from "@/components/CustomHeader";
 import CustomButton from "@/components/CustomButton";
 import { useCartStore } from "@/store/cart.store";
 import useAuthStore from "@/store/auth.store";
-import { createOrder, getSupabase } from "@/lib/supabase";
+import { createOrder, getSupabase, getDeliveryFee, getDiscount } from "@/lib/supabase";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,6 +32,9 @@ export default function Checkout() {
   const { user } = useAuthStore();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState(50);
+  const [discount, setDiscount] = useState(15);
+  const [loadingSettings, setLoadingSettings] = useState(true);
   const [form, setForm] = useState({
     address: user?.address || "",
     phone: user?.phone || "",
@@ -43,6 +46,35 @@ export default function Checkout() {
   });
 
   console.log("[Checkout] Screen rendered");
+
+  // Fetch delivery fee and discount from database
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        console.log("[Checkout] Fetching app settings...");
+        setLoadingSettings(true);
+        
+        const [fee, disc] = await Promise.all([
+          getDeliveryFee(),
+          getDiscount()
+        ]);
+
+        console.log("[Checkout] Settings fetched:", { deliveryFee: fee, discount: disc });
+        setDeliveryFee(fee);
+        setDiscount(disc);
+      } catch (error: any) {
+        console.error("[Checkout] Error fetching settings:", error);
+        Sentry.captureException(error, {
+          tags: { component: "Checkout", action: "fetchSettings" },
+        });
+        // Keep default values on error
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // Update form when user data changes
   useEffect(() => {
@@ -61,8 +93,6 @@ export default function Checkout() {
   }, [user]);
 
   const totalPrice = getTotalPrice();
-  const deliveryFee = 50;
-  const discount = 15;
   const finalTotal = totalPrice + deliveryFee - discount;
 
   console.log("[Checkout] Order summary:", {
@@ -321,7 +351,9 @@ export default function Checkout() {
                 <Ionicons name="car-outline" size={16} color="#666" />
                 <Text style={styles.rowLabel}>Delivery Fee</Text>
               </View>
-              <Text style={styles.rowValue}>R {deliveryFee.toFixed(2)}</Text>
+              <Text style={styles.rowValue}>
+                {loadingSettings ? "..." : `R ${deliveryFee.toFixed(2)}`}
+              </Text>
             </View>
 
             <View style={styles.row}>
@@ -330,7 +362,7 @@ export default function Checkout() {
                 <Text style={styles.rowLabel}>Discount</Text>
               </View>
               <Text style={[styles.rowValue, styles.discount]}>
-                -R {discount.toFixed(2)}
+                {loadingSettings ? "..." : `-R ${discount.toFixed(2)}`}
               </Text>
             </View>
 
@@ -338,18 +370,26 @@ export default function Checkout() {
 
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>R {finalTotal.toFixed(2)}</Text>
+              <Text style={styles.totalValue}>
+                {loadingSettings ? "..." : `R ${finalTotal.toFixed(2)}`}
+              </Text>
             </View>
           </View>
         </View>
 
         <CustomButton
-          title={loading ? "Processing Order..." : `Place Order - R ${finalTotal.toFixed(2)}`}
+          title={
+            loading 
+              ? "Processing Order..." 
+              : loadingSettings 
+                ? "Loading..." 
+                : `Place Order - R ${finalTotal.toFixed(2)}`
+          }
           onPress={handleCheckout}
-          disabled={loading}
+          disabled={loading || loadingSettings}
           style={styles.button}
           leftIcon={
-            !loading && (
+            !loading && !loadingSettings && (
               <Ionicons name="checkmark-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
             )
           }

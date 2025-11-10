@@ -8,7 +8,7 @@
  */
 
 import {FlatList, Image, StyleSheet, Text, View} from "react-native";
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useCartStore} from "@/store/cart.store";
 import CustomHeader from "@/components/CustomHeader";
@@ -20,6 +20,7 @@ import {StatusBar} from "expo-status-bar";
 import {images} from "@/constants";
 import {router} from "expo-router";
 import {Ionicons} from "@expo/vector-icons";
+import {getDeliveryFee, getDiscount} from "@/lib/supabase";
 
 /**
  * Payment Info Component
@@ -34,11 +35,43 @@ const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
 
 export default function Cart() {
   const { items, getTotalItems, getTotalPrice } = useCartStore();
+  const [deliveryFee, setDeliveryFee] = useState(50);
+  const [discount, setDiscount] = useState(15);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
 
   console.log("[Cart] Screen rendered with items:", items.length);
+
+  // Fetch delivery fee and discount from database
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        console.log("[Cart] Fetching app settings...");
+        setLoadingSettings(true);
+        
+        const [fee, disc] = await Promise.all([
+          getDeliveryFee(),
+          getDiscount()
+        ]);
+
+        console.log("[Cart] Settings fetched:", { deliveryFee: fee, discount: disc });
+        setDeliveryFee(fee);
+        setDiscount(disc);
+      } catch (error: any) {
+        console.error("[Cart] Error fetching settings:", error);
+        Sentry.captureException(error, {
+          tags: { component: "Cart", action: "fetchSettings" },
+        });
+        // Keep default values on error
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // Log cart state changes
   useEffect(() => {
@@ -46,8 +79,11 @@ export default function Cart() {
       items: items.length,
       totalItems,
       totalPrice: totalPrice.toFixed(2),
+      deliveryFee,
+      discount,
+      finalTotal: (totalPrice + deliveryFee - discount).toFixed(2),
     });
-  }, [items, totalItems, totalPrice]);
+  }, [items, totalItems, totalPrice, deliveryFee, discount]);
 
   /**
    * Handle navigation to checkout
@@ -124,7 +160,9 @@ export default function Cart() {
                       <Ionicons name="car-outline" size={16} color="#666" />
                       <Text style={styles.summaryLabel}>Delivery Fee</Text>
                     </View>
-                    <Text style={styles.summaryValue}>R 50.00</Text>
+                    <Text style={styles.summaryValue}>
+                      {loadingSettings ? "..." : `R ${deliveryFee.toFixed(2)}`}
+                    </Text>
                   </View>
 
                   <View style={styles.summaryRow}>
@@ -132,14 +170,21 @@ export default function Cart() {
                       <Ionicons name="pricetag-outline" size={16} color="#10B981" />
                       <Text style={styles.summaryLabel}>Discount</Text>
                     </View>
-                    <Text style={[styles.summaryValue, styles.discountValue]}>-R 15.00</Text>
+                    <Text style={[styles.summaryValue, styles.discountValue]}>
+                      {loadingSettings ? "..." : `-R ${discount.toFixed(2)}`}
+                    </Text>
                   </View>
 
                   <View style={styles.divider} />
 
                   <View style={styles.totalRow}>
                     <Text style={styles.totalLabel}>Total</Text>
-                    <Text style={styles.totalValue}>R {(totalPrice + 50 - 15).toFixed(2)}</Text>
+                    <Text style={styles.totalValue}>
+                      {loadingSettings 
+                        ? "..." 
+                        : `R ${(totalPrice + deliveryFee - discount).toFixed(2)}`
+                      }
+                    </Text>
                   </View>
                 </View>
               </View>
