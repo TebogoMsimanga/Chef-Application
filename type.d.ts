@@ -87,6 +87,8 @@ interface CustomButtonProps {
 
 interface CustomHeaderProps {
   title?: string;
+  showLogout?: boolean;
+  onLogout?: () => void;
 }
 
 interface CustomInputProps {

@@ -2,8 +2,9 @@ import {useRouter} from "expo-router";
 import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {CustomHeaderProps} from "@/type";
 import {images} from "@/constants";
+import {Ionicons} from "@expo/vector-icons";
 
-const CustomHeader = ({ title }: CustomHeaderProps) => {
+const CustomHeader = ({ title, showLogout, onLogout }: CustomHeaderProps) => {
   const router = useRouter();
 
   return (
@@ -19,8 +20,14 @@ const CustomHeader = ({ title }: CustomHeaderProps) => {
       {/* Title */}
       {title && <Text style={styles.title}>{title}</Text>}
 
-      {/* Search icon */}
-      <Image source={images.dots} style={styles.icon} resizeMode="contain" />
+      {/* Right side - Logout button or dots icon */}
+      {showLogout && onLogout ? (
+        <TouchableOpacity onPress={onLogout} style={styles.logoutButton}>
+          <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+        </TouchableOpacity>
+      ) : (
+        <Image source={images.dots} style={styles.icon} resizeMode="contain" />
+      )}
     </View>
   );
 };
@@ -57,5 +64,8 @@ const styles = StyleSheet.create({
     fontFamily: "Quicksand-SemiBold", 
     color: "#1A1A1A",         
     textAlign: "center",
+  },
+  logoutButton: {
+    padding: 4,
   },
 });
