@@ -28,7 +28,7 @@ You can start developing by editing the files inside the **app** directory. This
 ## Get a fresh project
 
 When you're ready, run:
-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
+<!-- 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 -->
 
 ```bash
 npm run reset-project

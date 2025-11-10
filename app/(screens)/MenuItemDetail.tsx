@@ -1,23 +1,15 @@
 import CustomButton from "@/components/CustomButton";
 import CustomHeader from "@/components/CustomHeader";
-import { images } from "@/constants";
-import { getCustomizationsForMenu, getMenuItem } from "@/lib/appwrite";
+import {images} from "@/constants";
+import {getCustomizationsForMenu, getMenuItem} from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
-import { useCartStore } from "@/store/cart.store";
-import { CartCustomization, CustomizationItem, MenuItem } from "@/type";
-import { router, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {useCartStore} from "@/store/cart.store";
+import {CartCustomization, CustomizationItem, MenuItem} from "@/type";
+import {router, useLocalSearchParams} from "expo-router";
+import {StatusBar} from "expo-status-bar";
+import React, {useEffect, useState} from "react";
+import {FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 
 const MenuItemDetail = () => {
   const { id } = useLocalSearchParams();
