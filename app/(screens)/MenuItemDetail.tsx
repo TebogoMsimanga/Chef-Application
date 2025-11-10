@@ -19,7 +19,7 @@ import {useFavoritesStore} from "@/store/favorite.store";
 import useAuthStore from "@/store/auth.store";
 import {CartCustomization} from "@/type";
 import * as Sentry from "@sentry/react-native";
-import {router, useLocalSearchParams} from "expo-router";
+import {router, useLocalSearchParams, useFocusEffect} from "expo-router";
 import {StatusBar} from "expo-status-bar";
 import {Ionicons} from "@expo/vector-icons";
 import React, {useEffect, useState} from "react";
@@ -51,7 +51,7 @@ interface CustomizationItem {
 
 const MenuItemDetail = () => {
   const { id } = useLocalSearchParams();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
   const addToCart = useCartStore((state) => state.addItem);
   const { addFavorite: addToStore, removeFavorite: removeFromStore } = useFavoritesStore();
 

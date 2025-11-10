@@ -1,9 +1,11 @@
 import {images} from "@/constants";
 import {useCartStore} from "@/store/cart.store";
 import {TabBarIconProps} from "@/type";
-import {Tabs} from "expo-router";
-import React from "react";
+import {Tabs, Redirect, useFocusEffect} from "expo-router";
+import React, {useCallback} from "react";
 import {Image, StyleSheet, Text, View} from "react-native";
+import useAuthStore from "@/store/auth.store";
+import {router} from "expo-router";
 
 const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => {
 
@@ -42,6 +44,28 @@ const TabBarIcon = ({ focused, icon, title }: TabBarIconProps) => {
 };
 
 export default function TabLayout() {
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  // Redirect to auth if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoading && !isAuthenticated) {
+        console.log("[TabLayout] User not authenticated, redirecting to sign-in");
+        router.replace("/(auth)/sign-in");
+      }
+    }, [isAuthenticated, isLoading])
+  );
+
+  // Show nothing while checking auth or redirecting
+  if (isLoading) {
+    return null;
+  }
+
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

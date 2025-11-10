@@ -28,7 +28,8 @@ import { getOrders } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
 import { Ionicons } from "@expo/vector-icons";
 import { images } from "@/constants";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 interface OrderItem {
   id: string;
@@ -55,10 +56,33 @@ interface Order {
 }
 
 export default function Orders() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Redirect to sign-in if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoading && !isAuthenticated) {
+        console.log("[Orders] User not authenticated, redirecting to sign-in");
+        router.replace("/(auth)/sign-in");
+      }
+    }, [isAuthenticated, isLoading])
+  );
+
+  // Show loading or redirect if not authenticated
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#FE8C00" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return null; // Will redirect via useFocusEffect
+  }
 
   console.log("[Orders] Screen rendered");
 

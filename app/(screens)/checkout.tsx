@@ -25,11 +25,12 @@ import CustomButton from "@/components/CustomButton";
 import { useCartStore } from "@/store/cart.store";
 import useAuthStore from "@/store/auth.store";
 import { createOrder, getSupabase, getDeliveryFee, getDiscount } from "@/lib/supabase";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useCallback } from "react";
 
 export default function Checkout() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const [loading, setLoading] = useState(false);
   const [deliveryFee, setDeliveryFee] = useState(50);
@@ -46,6 +47,29 @@ export default function Checkout() {
   });
 
   console.log("[Checkout] Screen rendered");
+
+  // Redirect to sign-in if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoading && !isAuthenticated) {
+        console.log("[Checkout] User not authenticated, redirecting to sign-in");
+        router.replace("/(auth)/sign-in");
+      }
+    }, [isAuthenticated, isLoading])
+  );
+
+  // Show loading or redirect if not authenticated
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#ffffff" }}>
+        <ActivityIndicator size="large" color="#FE8C00" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return null; // Will redirect via useFocusEffect
+  }
 
   // Fetch delivery fee and discount from database
   useEffect(() => {

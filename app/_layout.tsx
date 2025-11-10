@@ -125,13 +125,16 @@ export default Sentry.wrap(function RootLayout() {
 
   console.log("[RootLayout] App ready - Authenticated:", isAuthenticated);
 
-  // Route to auth screens if not authenticated, otherwise show main app tabs
+  // Route to auth screens if not authenticated, otherwise show main app tabs and screens
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {!isAuthenticated ? (
         <Stack.Screen name="(auth)" />
       ) : (
-        <Stack.Screen name="(tabs)" />
+        <>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(screens)" />
+        </>
       )}
     </Stack>
   );

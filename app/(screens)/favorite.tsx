@@ -1,28 +1,45 @@
 /**
  * Favorites Screen
- * 
+ *
  * Displays user's favorite menu items.
  * Fetches favorites from Supabase and allows removal.
- * 
+ *
  * @component
  */
 
-import { FlatList, Image, StyleSheet, Text, View, ActivityIndicator } from "react-native";
-import React, { useEffect, useState, useCallback } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as Sentry from "@sentry/react-native";
 import CustomHeader from "@/components/CustomHeader";
-import { StatusBar } from "expo-status-bar";
-import { images } from "@/constants";
 import FavoriteItem from "@/components/FavoriteItem";
+import { images } from "@/constants";
 import { getFavorites } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
 import { useFavoritesStore } from "@/store/favorite.store";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+interface FavoriteData {
+  id: string;
+  menu_item_id?: string;
+  menu_item?: {
+    id: string;
+    name: string;
+    image: string;
+    price: number;
+    description?: string;
+    rating?: number;
+    calories?: number;
+    protein?: number;
+  };
+}
 
 export default function Favorite() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
   const { initializeFavorites } = useFavoritesStore();
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState<FavoriteData[]>([]);
   const [loading, setLoading] = useState(true);
 
   console.log("[Favorites] Screen rendered");
@@ -36,39 +53,35 @@ export default function Favorite() {
       setLoading(false);
       return;
     }
-    
+
     try {
       console.log("[Favorites] Loading favorites for user:", user.id);
       setLoading(true);
-      
+
       const data = await getFavorites(user.id);
-      
+
       console.log("[Favorites] Favorites loaded:", data?.length || 0, "items");
       setFavorites(data || []);
-      
+
       // Sync with store for real-time updates
-      const favoriteIds = data.map((fav: any) => 
-        fav.menu_item_id || fav.menu_item?.id || fav.id
-      ).filter((id: string) => id);
+      const favoriteIds = data
+        .map((fav: any) => fav.menu_item_id || fav.menu_item?.id || fav.id)
+        .filter((id: string) => id);
       initializeFavorites(favoriteIds);
     } catch (error: any) {
       console.error("[Favorites] Error loading favorites:", error);
-      
+
       // Log to Sentry
       Sentry.captureException(error, {
         tags: { component: "Favorites", action: "loadFavorites" },
         extra: { userId: user.id, errorMessage: error?.message },
       });
-      
+
       setFavorites([]);
     } finally {
       setLoading(false);
     }
   }, [user?.id, initializeFavorites]);
-
-  useEffect(() => {
-    loadFavorites();
-  }, [loadFavorites]);
 
   /**
    * Handle favorite removal
@@ -79,13 +92,60 @@ export default function Favorite() {
     loadFavorites();
   }, [loadFavorites]);
 
+  // Redirect to sign-in if not authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoading && !isAuthenticated) {
+        console.log(
+          "[Favorites] User not authenticated, redirecting to sign-in"
+        );
+        router.replace("/(auth)/sign-in");
+      }
+    }, [isAuthenticated, isLoading])
+  );
+
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      loadFavorites();
+    }
+  }, [loadFavorites, isAuthenticated, user?.id]);
+
+  // Show loading or redirect if not authenticated
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "#fff",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color="#FE8C00" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!isAuthenticated || !user) {
+    return null; // Will redirect via useFocusEffect
+  }
+
   // Show loading state
   if (loading) {
     console.log("[Favorites] Loading favorites...");
     return (
-      <SafeAreaView style={{ backgroundColor: "#fff", height: "100%", justifyContent: "center", alignItems: "center" }}>
+      <SafeAreaView
+        style={{
+          backgroundColor: "#fff",
+          height: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color="#FE8C00" />
-        <Text style={{ marginTop: 10, fontFamily: "Quicksand-Medium" }}>Loading favorites...</Text>
+        <Text style={{ marginTop: 10, fontFamily: "Quicksand-Medium" }}>
+          Loading favorites...
+        </Text>
       </SafeAreaView>
     );
   }
