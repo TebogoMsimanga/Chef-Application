@@ -42,7 +42,15 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
 
   const itemQuantity = getItemQuantity();
 
-  // Check if item is favorite on mount
+  // Subscribe to favorites store for real-time updates
+  const isFavoriteInStore = useFavoritesStore((state) => state.isFavorite(item?.id || ""));
+
+  // Sync local state with store
+  useEffect(() => {
+    setFavorite(isFavoriteInStore);
+  }, [isFavoriteInStore]);
+
+  // Check if item is favorite on mount and sync with store
   useEffect(() => {
     if (user?.id && item?.id) {
       checkFavoriteStatus();
@@ -91,15 +99,19 @@ const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
 
       if (favorite) {
         console.log("[MealCard] Removing favorite...");
+        // Update database first
         await removeFavorite(user.id, item.id);
-        setFavorite(false);
+        // Then update local store (this will trigger re-renders everywhere)
         removeFromStore(item.id);
+        setFavorite(false);
         console.log("[MealCard] Favorite removed successfully");
       } else {
         console.log("[MealCard] Adding favorite...");
+        // Update database first
         await addFavorite(user.id, item.id);
-        setFavorite(true);
+        // Then update local store (this will trigger re-renders everywhere)
         addToStore(item.id);
+        setFavorite(true);
         console.log("[MealCard] Favorite added successfully");
       }
     } catch (error: any) {

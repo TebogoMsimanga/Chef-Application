@@ -20,9 +20,29 @@ import * as Sentry from "@sentry/react-native";
  * 
  * Manages local favorites state for UI purposes.
  * Actual favorites are persisted in Supabase.
+ * Syncs with database on mount and updates in real-time.
  */
 export const useFavoritesStore = create<FavoritesStore>((set, get) => ({
   favorites: [],
+
+  /**
+   * Initialize favorites from database
+   * Should be called on app mount or when user logs in
+   * 
+   * @param {string[]} favoriteIds - Array of favorite menu item IDs from database
+   */
+  initializeFavorites: (favoriteIds: string[]) => {
+    try {
+      console.log("[FavoritesStore] Initializing favorites from database:", favoriteIds.length);
+      set({ favorites: favoriteIds });
+      console.log("[FavoritesStore] Favorites initialized. Total:", favoriteIds.length);
+    } catch (error: any) {
+      console.error("[FavoritesStore] Error initializing favorites:", error);
+      Sentry.captureException(error, {
+        tags: { component: "FavoritesStore", action: "initializeFavorites" },
+      });
+    }
+  },
 
   /**
    * Add favorite to local state
