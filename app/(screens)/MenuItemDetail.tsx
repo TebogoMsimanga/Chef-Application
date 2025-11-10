@@ -1,9 +1,22 @@
+/**
+ * Menu Item Detail Screen
+ * 
+ * Displays detailed information about a menu item including:
+ * - Item details (name, description, price, rating, nutrition)
+ * - Available customizations (sides, toppings)
+ * - Quantity selector
+ * - Add to cart functionality
+ * 
+ * @component
+ */
+
 import CustomButton from "@/components/CustomButton";
 import CustomHeader from "@/components/CustomHeader";
 import {images} from "@/constants";
 import {getMenuItem, getSides, getToppings} from "@/lib/supabase";
 import {useCartStore} from "@/store/cart.store";
 import {CartCustomization} from "@/type";
+import * as Sentry from "@sentry/react-native";
 import {router, useLocalSearchParams} from "expo-router";
 import {StatusBar} from "expo-status-bar";
 import React, {useEffect, useState} from "react";
@@ -41,24 +54,43 @@ const MenuItemDetail = () => {
   const [selectedCustoms, setSelectedCustoms] = useState<CartCustomization[]>([]);
   const [quantity, setQuantity] = useState(1);
 
+  console.log("[MenuItemDetail] Screen rendered with ID:", id);
+
   useEffect(() => {
-    loadData();
+    if (id) {
+      loadData();
+    }
   }, [id]);
 
+  /**
+   * Load menu item data, sides, and toppings
+   */
   const loadData = async () => {
     try {
+      console.log("[MenuItemDetail] Loading data for item:", id);
       setLoading(true);
+      
       const [menuItem, sidesData, toppingsData] = await Promise.all([
         getMenuItem(id as string),
         getSides(),
         getToppings()
       ]);
 
+      console.log("[MenuItemDetail] Data loaded:", {
+        item: menuItem?.name,
+        sides: sidesData?.length || 0,
+        toppings: toppingsData?.length || 0,
+      });
+
       setItem(menuItem);
       setSides(sidesData || []);
       setToppings(toppingsData || []);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (error: any) {
+      console.error("[MenuItemDetail] Error loading data:", error);
+      Sentry.captureException(error, {
+        tags: { component: "MenuItemDetail", action: "loadData" },
+        extra: { itemId: id, errorMessage: error?.message },
+      });
     } finally {
       setLoading(false);
     }
@@ -90,30 +122,65 @@ const MenuItemDetail = () => {
     groupedCustoms[cust.type].push(cust);
   });
 
+  /**
+   * Toggle customization selection
+   * Adds or removes customization from selected list
+   */
   const toggleCustom = (cust: CustomizationItem) => {
-    const exists = selectedCustoms.find((s) => s.id === cust.id);
-    if (exists) {
-      setSelectedCustoms(selectedCustoms.filter((s) => s.id !== cust.id));
-    } else {
-      setSelectedCustoms([
-        ...selectedCustoms,
-        { id: cust.id, name: cust.name, price: cust.price, type: cust.type },
-      ]);
+    try {
+      const exists = selectedCustoms.find((s) => s.id === cust.id);
+      if (exists) {
+        console.log("[MenuItemDetail] Removing customization:", cust.name);
+        setSelectedCustoms(selectedCustoms.filter((s) => s.id !== cust.id));
+      } else {
+        console.log("[MenuItemDetail] Adding customization:", cust.name);
+        setSelectedCustoms([
+          ...selectedCustoms,
+          { id: cust.id, name: cust.name, price: cust.price, type: cust.type },
+        ]);
+      }
+    } catch (error: any) {
+      console.error("[MenuItemDetail] Error toggling customization:", error);
+      Sentry.captureException(error, {
+        tags: { component: "MenuItemDetail", action: "toggleCustom" },
+        extra: { customizationId: cust.id },
+      });
     }
   };
 
   const customTotal = selectedCustoms.reduce((sum, c) => sum + c.price, 0);
   const totalPrice = (item.price + customTotal) * quantity;
 
+  /**
+   * Handle adding item to cart
+   * Adds item with selected customizations and quantity to cart
+   */
   const handleAddToCart = () => {
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image_url: item.image,
-      customizations: selectedCustoms,
-    });
-    router.back();
+    try {
+      console.log("[MenuItemDetail] Adding to cart:", {
+        item: item.name,
+        quantity,
+        customizations: selectedCustoms.length,
+        totalPrice,
+      });
+
+      addToCart({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image_url: item.image,
+        customizations: selectedCustoms,
+      });
+
+      console.log("[MenuItemDetail] Item added to cart successfully");
+      router.back();
+    } catch (error: any) {
+      console.error("[MenuItemDetail] Error adding to cart:", error);
+      Sentry.captureException(error, {
+        tags: { component: "MenuItemDetail", action: "handleAddToCart" },
+        extra: { itemId: item.id, itemName: item.name },
+      });
+    }
   };
 
   const renderCustomItem = ({ item: cust }: { item: CustomizationItem }) => {
@@ -195,14 +262,22 @@ const MenuItemDetail = () => {
 
           <View style={styles.quantityContainer}>
             <TouchableOpacity
-              onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              onPress={() => {
+                const newQty = Math.max(1, quantity - 1);
+                console.log("[MenuItemDetail] Decreasing quantity:", newQty);
+                setQuantity(newQty);
+              }}
               style={styles.qtyButton}
             >
               <Text style={styles.qtyButtonText}>-</Text>
             </TouchableOpacity>
             <Text style={styles.quantityText}>{quantity}</Text>
             <TouchableOpacity
-              onPress={() => setQuantity(quantity + 1)}
+              onPress={() => {
+                const newQty = quantity + 1;
+                console.log("[MenuItemDetail] Increasing quantity:", newQty);
+                setQuantity(newQty);
+              }}
               style={styles.qtyButton}
             >
               <Text style={styles.qtyButtonText}>+</Text>

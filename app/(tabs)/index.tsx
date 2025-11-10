@@ -1,8 +1,18 @@
+/**
+ * Home Screen
+ *
+ * Main screen displaying category cards with meal counts.
+ * Fetches menu items and categories from Supabase to calculate counts.
+ *
+ * @component
+ */
+
 import AddButton from "@/components/AddButton";
 import { images, menu } from "@/constants";
 import { getCategories, getMenu } from "@/lib/supabase";
-import useAppwrite from "@/lib/useAppwrite";
+import useSupabase from "@/lib/useSupabase";
 import useAuthStore from "@/store/auth.store";
+import * as Sentry from "@sentry/react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
@@ -14,6 +24,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,54 +34,109 @@ export default function Index() {
     {}
   );
 
-  // Fetch all menus using useAppwrite (no category, high limit to get everything)
+  console.log("[Home] Rendering home screen");
+
+  // Fetch all menus using useSupabase (no category, high limit to get everything)
   const {
     data: allMenus,
-    loading,
-    error,
-  } = useAppwrite({
+    loading: menusLoading,
+    error: menusError,
+  } = useSupabase({
     fn: getMenu,
     params: { category: "", query: "", limit: 10000 },
+    showErrorAlert: false, 
   });
 
-  const { data: categoriesData } = useAppwrite({
+  const {
+    data: categoriesData,
+    loading: categoriesLoading,
+    error: categoriesError,
+  } = useSupabase({
     fn: getCategories,
+    showErrorAlert: false,
   });
 
+  // Calculate category counts when data is loaded
   useEffect(() => {
-    if (allMenus && categoriesData && !loading) {
-      const categoryIdToNameMap: Record<string, string> = {};
-      categoriesData.forEach((cat: any) => {
-        categoryIdToNameMap[cat.id] = cat.name.toUpperCase();
-      });
+    if (allMenus && categoriesData && !menusLoading && !categoriesLoading) {
+      try {
+        console.log("[Home] Calculating category counts...");
+        console.log("[Home] Menu items:", allMenus.length);
+        console.log("[Home] Categories:", categoriesData.length);
 
-      const counts: Record<string, number> = {};
+        const categoryIdToNameMap: Record<string, string> = {};
+        categoriesData.forEach((cat: any) => {
+          categoryIdToNameMap[cat.id] = cat.name.toUpperCase();
+        });
 
-      allMenus.forEach((m: any) => {
-        const categoryName = categoryIdToNameMap[m.category_id];
-        if (categoryName) {
-          counts[categoryName] = (counts[categoryName] || 0) + 1;
-        }
-      });
+        const counts: Record<string, number> = {};
 
-      const finalCategoryCounts = menu.reduce((acc, item) => {
-        acc[item.title] = counts[item.title] || 0;
-        return acc;
-      }, {} as Record<string, number>);
+        allMenus.forEach((m: any) => {
+          // Handle both category_id and category.id structures
+          const categoryId = m.category_id || m.category?.id;
+          const categoryName = categoryIdToNameMap[categoryId];
+          if (categoryName) {
+            counts[categoryName] = (counts[categoryName] || 0) + 1;
+          }
+        });
 
-      // Create a map from category title to category ID for navigation
-      const categoryNameToIdMap: Record<string, string> = {};
-      categoriesData.forEach((cat: any) => {
-        categoryNameToIdMap[cat.name.toUpperCase()] = cat.id;
-      });
-      (Index as any).categoryNameToIdMap = categoryNameToIdMap;
+        const finalCategoryCounts = menu.reduce((acc, item) => {
+          acc[item.title] = counts[item.title] || 0;
+          return acc;
+        }, {} as Record<string, number>);
 
-      setCategoryCounts(finalCategoryCounts);
+        // Create a map from category title to category ID for navigation
+        const categoryNameToIdMap: Record<string, string> = {};
+        categoriesData.forEach((cat: any) => {
+          categoryNameToIdMap[cat.name.toUpperCase()] = cat.id;
+        });
+        (Index as any).categoryNameToIdMap = categoryNameToIdMap;
+
+        console.log("[Home] Category counts calculated:", finalCategoryCounts);
+        setCategoryCounts(finalCategoryCounts);
+      } catch (error: any) {
+        console.error("[Home] Error calculating category counts:", error);
+        Sentry.captureException(error, {
+          tags: { component: "Home", action: "calculateCounts" },
+        });
+      }
     }
-  }, [allMenus, loading, categoriesData]);
+  }, [allMenus, menusLoading, categoriesData, categoriesLoading]);
 
-  if (error) {
-    console.error("Error fetching menus:", error);
+  // Handle errors
+  useEffect(() => {
+    if (menusError) {
+      console.error("[Home] Error fetching menus:", menusError);
+      Sentry.captureException(new Error(menusError), {
+        tags: { component: "Home", action: "fetchMenus" },
+      });
+    }
+    if (categoriesError) {
+      console.error("[Home] Error fetching categories:", categoriesError);
+      Sentry.captureException(new Error(categoriesError), {
+        tags: { component: "Home", action: "fetchCategories" },
+      });
+    }
+  }, [menusError, categoriesError]);
+
+  // Show loading state
+  if (menusLoading || categoriesLoading) {
+    console.log("[Home] Loading data...");
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "#ffffff",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color="#FE8C00" />
+        <Text style={{ marginTop: 10, fontFamily: "Quicksand-Medium" }}>
+          Loading categories...
+        </Text>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -91,12 +157,39 @@ export default function Index() {
                 ]}
                 android_ripple={{ color: "rgba(255, 255, 255, 0.13)" }}
                 onPress={() => {
-                  const categoryId = (Index as any).categoryNameToIdMap[
-                    item.title
-                  ];
-                  router.push(
-                    `/(screens)/CategoryMeals?category=${item.title}&categoryId=${categoryId}`
-                  );
+                  try {
+                    const categoryId = (Index as any).categoryNameToIdMap[
+                      item.title
+                    ];
+                    console.log(
+                      "[Home] Navigating to category:",
+                      item.title,
+                      "ID:",
+                      categoryId
+                    );
+
+                    if (categoryId) {
+                      router.push(
+                        `/(screens)/CategoryMeals?category=${encodeURIComponent(
+                          item.title
+                        )}&categoryId=${categoryId}`
+                      );
+                    } else {
+                      console.warn(
+                        "[Home] Category ID not found for:",
+                        item.title
+                      );
+                      Sentry.captureMessage("Category ID not found", {
+                        level: "warning",
+                        tags: { component: "Home", category: item.title },
+                      });
+                    }
+                  } catch (error: any) {
+                    console.error("[Home] Navigation error:", error);
+                    Sentry.captureException(error, {
+                      tags: { component: "Home", action: "navigateToCategory" },
+                    });
+                  }
                 }}
               >
                 <View style={{ width: "50%", height: "100%" }}>

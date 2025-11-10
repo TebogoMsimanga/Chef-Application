@@ -1,15 +1,25 @@
+/**
+ * Search Screen
+ *
+ * Allows users to search and filter menu items by category and query.
+ * Displays results in a grid layout with meal cards.
+ *
+ * @component
+ */
+
+import FavButton from "@/components/FavButton";
 import Filter from "@/components/Filter";
 import MealCard from "@/components/MealCard";
 import SearchBar from "@/components/SearchBar";
-import {images} from "@/constants";
-import {getCategories, getMenu} from "@/lib/appwrite";
-import useAppwrite from "@/lib/useAppwrite";
-import {useLocalSearchParams} from "expo-router";
-import React, {useEffect} from "react";
-import {FlatList, Image, StyleSheet, Text, View,} from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
-import {StatusBar} from "expo-status-bar";
-import FavButton from "@/components/FavButton";
+import { images } from "@/constants";
+import { getCategories, getMenu } from "@/lib/supabase";
+import useSupabase from "@/lib/useSupabase";
+import * as Sentry from "@sentry/react-native";
+import { useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
+import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
   const { category, query } = useLocalSearchParams<{
@@ -17,23 +27,43 @@ const Search = () => {
     category: string;
   }>();
 
-  const { data, refetch, loading } = useAppwrite({
+  console.log("[Search] Screen rendered with params:", { category, query });
+
+  const { data, refetch, loading, error } = useSupabase({
     fn: getMenu,
     params: {
-      category,
-      query,
+      category: (category as string) || "",
+      query: (query as string) || "",
       limit: 6,
     },
     skip: true,
+    showErrorAlert: false,
   });
 
-  const { data: categories } = useAppwrite({
+  const { data: categories } = useSupabase({
     fn: getCategories,
+    showErrorAlert: false,
   });
 
   useEffect(() => {
-    refetch({ category, query, limit: 6 });
-  }, [category, query]);
+    console.log("[Search] Refetching with params:", { category, query });
+    refetch({
+      category: (category as string) || "",
+      query: (query as string) || "",
+      limit: 6,
+    });
+  }, [category, query, refetch]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      console.error("[Search] Error fetching menu items:", error);
+      Sentry.captureException(new Error(error), {
+        tags: { component: "Search", action: "fetchMenu" },
+        extra: { category, query },
+      });
+    }
+  }, [error, category, query]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,7 +85,7 @@ const Search = () => {
             </View>
           );
         }}
-        keyExtractor={(item) => item.$id}
+        keyExtractor={(item) => item.id || item.$id || `item-${item.name}`}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.contentContainer}
@@ -82,8 +112,6 @@ const Search = () => {
 
             {/* <SearchBar /> */}
             <SearchBar />
-            {/* <Filter categories={categories} /> */}
-            <Text>Filter</Text>
             <Filter categories={categories || []} />
             {/* <Button
               title="seed"
@@ -95,7 +123,13 @@ const Search = () => {
         )}
         ListEmptyComponent={() =>
           !loading && (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <Image
                 source={images.emptyState}
                 resizeMode="contain"

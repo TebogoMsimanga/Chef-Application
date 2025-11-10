@@ -1,9 +1,22 @@
+/**
+ * Favorite Item Component
+ * 
+ * Displays a favorite menu item with:
+ * - Item image, name, description, price
+ * - Remove from favorites button
+ * - Navigation to item details
+ * 
+ * @component
+ */
+
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
 import { images } from "@/constants";
 import { router } from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import { removeFavorite } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
+import useFavoritesStore from "@/store/favorite.store";
 
 interface FavoriteItemProps {
   item: any;
@@ -12,15 +25,65 @@ interface FavoriteItemProps {
 
 const FavoriteItem = ({ item, onRemove }: FavoriteItemProps) => {
   const { user } = useAuthStore();
+  const { removeFavorite: removeFromStore } = useFavoritesStore();
 
+  /**
+   * Handle removing item from favorites
+   * Removes from Supabase and updates local state
+   */
   const handleRemove = async () => {
     try {
-      if (!user?.id) return;
+      if (!user?.id) {
+        console.warn("[FavoriteItem] User not authenticated");
+        return;
+      }
+
+      if (!item?.id) {
+        console.error("[FavoriteItem] Item ID missing");
+        return;
+      }
+
+      console.log("[FavoriteItem] Removing favorite:", item.id);
+
       await removeFavorite(user.id, item.id);
+      
+      // Update local store
+      removeFromStore(item.id);
+      
+      console.log("[FavoriteItem] Favorite removed successfully");
+      
       Alert.alert("Success", "Removed from favorites");
-      if (onRemove) onRemove();
+      
+      // Call onRemove callback to refresh list
+      if (onRemove) {
+        onRemove();
+      }
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      console.error("[FavoriteItem] Error removing favorite:", error);
+      
+      // Log to Sentry
+      Sentry.captureException(error, {
+        tags: { component: "FavoriteItem", action: "handleRemove" },
+        extra: { itemId: item.id, userId: user?.id, errorMessage: error?.message },
+      });
+
+      Alert.alert("Error", error.message || "Failed to remove favorite. Please try again.");
+    }
+  };
+
+  /**
+   * Handle navigation to item details
+   */
+  const handlePress = () => {
+    try {
+      console.log("[FavoriteItem] Navigating to item details:", item.id);
+      router.push(`/MenuItemDetail?id=${item.id}`);
+    } catch (error: any) {
+      console.error("[FavoriteItem] Error navigating:", error);
+      Sentry.captureException(error, {
+        tags: { component: "FavoriteItem", action: "handlePress" },
+        extra: { itemId: item.id },
+      });
     }
   };
 
@@ -28,7 +91,7 @@ const FavoriteItem = ({ item, onRemove }: FavoriteItemProps) => {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.content}
-        onPress={() => router.push(`/MenuItemDetail?id=${item.id}`)}
+        onPress={handlePress}
       >
         <Image
           source={{ uri: item.image || images.placeholder }}

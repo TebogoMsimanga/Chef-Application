@@ -1,4 +1,13 @@
-import React, { useState } from "react";
+/**
+ * Checkout Screen
+ * 
+ * Allows users to place orders with delivery information.
+ * Creates order and order items in Supabase.
+ * 
+ * @component
+ */
+
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,11 +19,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import * as Sentry from "@sentry/react-native";
 import CustomHeader from "@/components/CustomHeader";
 import CustomButton from "@/components/CustomButton";
 import { useCartStore } from "@/store/cart.store";
 import useAuthStore from "@/store/auth.store";
-import { createOrder } from "@/lib/supabase";
+import { createOrder, getSupabase } from "@/lib/supabase";
 import { router } from "expo-router";
 
 export default function Checkout() {
@@ -27,31 +37,76 @@ export default function Checkout() {
     notes: "",
   });
 
+  console.log("[Checkout] Screen rendered");
+
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      console.log("[Checkout] User data loaded, updating form");
+      setForm({
+        address: user.address || "",
+        phone: user.phone || "",
+        notes: "",
+      });
+    }
+  }, [user]);
+
   const totalPrice = getTotalPrice();
   const deliveryFee = 50;
   const discount = 15;
   const finalTotal = totalPrice + deliveryFee - discount;
 
+  console.log("[Checkout] Order summary:", {
+    items: items.length,
+    totalPrice: totalPrice.toFixed(2),
+    finalTotal: finalTotal.toFixed(2),
+  });
+
+  /**
+   * Handle order placement
+   * Creates order and order items in Supabase
+   */
   const handleCheckout = async () => {
-    if (!form.address || !form.phone) {
-      Alert.alert("Error", "Please fill in all required fields");
-      return;
-    }
-
     try {
-      setLoading(true);
+      console.log("[Checkout] Starting checkout process...");
 
+      // Validate form
+      if (!form.address || !form.phone) {
+        console.warn("[Checkout] Validation failed: missing required fields");
+        Alert.alert("Error", "Please fill in all required fields");
+        return;
+      }
+
+      if (!user?.id) {
+        console.error("[Checkout] User not authenticated");
+        Alert.alert("Error", "Please sign in to place an order");
+        return;
+      }
+
+      if (items.length === 0) {
+        console.warn("[Checkout] Cannot checkout with empty cart");
+        Alert.alert("Error", "Your cart is empty");
+        return;
+      }
+
+      setLoading(true);
+      console.log("[Checkout] Creating order...");
+
+      // Create order
       const orderData = {
-        user_id: user?.id,
+        user_id: user.id,
         total: finalTotal,
         status: "pending",
         delivery_address: form.address,
         phone: form.phone,
-        notes: form.notes,
+        notes: form.notes || null,
       };
 
       const order = await createOrder(orderData);
+      console.log("[Checkout] Order created:", order.id);
 
+      // Create order items using Supabase client
+      const supabase = getSupabase();
       const orderItems = items.map((item) => ({
         order_id: order.id,
         menu_item_id: item.id,
@@ -60,27 +115,44 @@ export default function Checkout() {
         customizations: item.customizations || [],
       }));
 
-      for (const orderItem of orderItems) {
-        await fetch(
-          `${process.env.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/order_items`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-              Authorization: `Bearer ${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
-            },
-            body: JSON.stringify(orderItem),
-          }
-        );
+      console.log("[Checkout] Creating", orderItems.length, "order items...");
+
+      // Insert all order items
+      const { data: insertedItems, error: itemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems)
+        .select();
+
+      if (itemsError) {
+        console.error("[Checkout] Error creating order items:", itemsError);
+        throw itemsError;
       }
 
+      console.log("[Checkout] Order items created:", insertedItems?.length || 0);
+      console.log("[Checkout] Order placed successfully");
+
+      // Clear cart
       clearCart();
+
+      // Navigate to success screen
       router.replace("/success");
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      console.error("[Checkout] Error placing order:", error);
+      
+      // Log to Sentry
+      Sentry.captureException(error, {
+        tags: { component: "Checkout", action: "handleCheckout" },
+        extra: {
+          userId: user?.id,
+          itemsCount: items.length,
+          errorMessage: error?.message,
+        },
+      });
+
+      Alert.alert("Error", error.message || "Failed to place order. Please try again.");
     } finally {
       setLoading(false);
+      console.log("[Checkout] Checkout process completed");
     }
   };
 

@@ -1,12 +1,49 @@
-import React from "react";
+/**
+ * Success Screen
+ * 
+ * Displays order confirmation after successful checkout.
+ * Shows success message and delivery information.
+ * 
+ * @component
+ */
+
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import * as Sentry from "@sentry/react-native";
 import CustomButton from "@/components/CustomButton";
 import { router } from "expo-router";
 import { images } from "@/constants";
 
 export default function Success() {
+  console.log("[Success] Screen rendered");
+
+  useEffect(() => {
+    console.log("[Success] Order placed successfully");
+    
+    // Log success event to Sentry
+    Sentry.captureMessage("Order placed successfully", {
+      level: "info",
+      tags: { component: "Success", action: "orderPlaced" },
+    });
+  }, []);
+
+  /**
+   * Handle navigation back to home
+   */
+  const handleGoHome = () => {
+    try {
+      console.log("[Success] Navigating to home");
+      router.replace("/");
+    } catch (error: any) {
+      console.error("[Success] Error navigating to home:", error);
+      Sentry.captureException(error, {
+        tags: { component: "Success", action: "handleGoHome" },
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
@@ -29,7 +66,7 @@ export default function Success() {
 
         <CustomButton
           title="Back to Home"
-          onPress={() => router.replace("/")}
+          onPress={handleGoHome}
           style={styles.button}
         />
       </View>

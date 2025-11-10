@@ -1,37 +1,72 @@
+/**
+ * Category Meals Screen
+ * 
+ * Displays all menu items for a specific category.
+ * Fetches meals filtered by category ID from Supabase.
+ * 
+ * @component
+ */
+
 import CustomHeader from "@/components/CustomHeader";
 import MealCard from "@/components/MealCard";
-import useAppwrite from "@/lib/useAppwrite";
-import {getMenu} from "@/lib/appwrite";
+import useSupabase from "@/lib/useSupabase";
+import {getMenu} from "@/lib/supabase";
+import * as Sentry from "@sentry/react-native";
 import {useLocalSearchParams} from "expo-router";
-import React, {useEffect} from "react";
-import {FlatList, StyleSheet, Text, View} from "react-native";
+import React, {useEffect, useCallback} from "react";
+import {FlatList, StyleSheet, Text, View, ActivityIndicator} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {StatusBar} from "expo-status-bar";
 
 export default function CategoryMeals() {
   const { category, categoryId } = useLocalSearchParams();
 
-  console.log("CategoryMeals screen - category param:", category);
-  console.log("CategoryMeals screen - categoryId param:", categoryId);
+  console.log("[CategoryMeals] Screen rendered with params:", { category, categoryId });
 
   const {
     data: meals,
     loading,
+    error,
     refetch,
-  } = useAppwrite({
+  } = useSupabase({
     fn: getMenu,
-    params: { category: categoryId as string, query: "", limit: 100 },
+    params: { category: (categoryId as string) || "", query: "", limit: 100 },
+    showErrorAlert: false,
   });
 
-  useEffect(() => {
-    refetch();
-  }, [categoryId]);
+  // Refetch when categoryId changes
+  const handleRefetch = useCallback(() => {
+    console.log("[CategoryMeals] Refetching meals for category:", categoryId);
+    refetch({ category: (categoryId as string) || "", query: "", limit: 100 });
+  }, [categoryId, refetch]);
 
-  console.log("CategoryMeals screen - meals data:", JSON.stringify(meals, null, 2));
+  useEffect(() => {
+    handleRefetch();
+  }, [categoryId, handleRefetch]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      console.error("[CategoryMeals] Error fetching meals:", error);
+      Sentry.captureException(new Error(error), {
+        tags: { component: "CategoryMeals", action: "fetchMeals" },
+        extra: { category, categoryId },
+      });
+    }
+  }, [error, category, categoryId]);
+
+  // Log meals data for debugging
+  useEffect(() => {
+    if (meals) {
+      console.log("[CategoryMeals] Meals loaded:", meals.length, "items");
+    }
+  }, [meals]);
 
   if (loading) {
+    console.log("[CategoryMeals] Loading meals...");
     return (
       <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FE8C00" />
         <Text style={styles.loadingText}>Loading Meals...</Text>
       </SafeAreaView>
     );
@@ -43,7 +78,7 @@ export default function CategoryMeals() {
       <CustomHeader title={category as string} />
       <FlatList
         data={meals}
-        keyExtractor={(item) => item.$id}
+        keyExtractor={(item) => item.id || item.$id || `meal-${item.name}`}
         renderItem={({ item }) => <MealCard item={item} />}
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={() => (

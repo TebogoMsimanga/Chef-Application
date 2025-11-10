@@ -1,29 +1,93 @@
+/**
+ * Cart Item Component
+ * 
+ * Displays a cart item with:
+ * - Item image, name, price
+ * - Quantity controls (increase/decrease)
+ * - Remove from cart button
+ * 
+ * @component
+ */
+
 import {useCartStore} from "@/store/cart.store";
 import {CartItemType} from "@/type";
+import * as Sentry from "@sentry/react-native";
 import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {images} from "@/constants";
 
 const CartItem = ({ item }: { item: CartItemType }) => {
   const { increaseQty, decreaseQty, removeItem } = useCartStore();
 
+  /**
+   * Handle decreasing quantity
+   */
+  const handleDecreaseQty = () => {
+    try {
+      console.log("[CartItem] Decreasing quantity for item:", item.id, "Current:", item.quantity);
+      decreaseQty(item.id, item.customizations!);
+      console.log("[CartItem] Quantity decreased");
+    } catch (error: any) {
+      console.error("[CartItem] Error decreasing quantity:", error);
+      Sentry.captureException(error, {
+        tags: { component: "CartItem", action: "handleDecreaseQty" },
+        extra: { itemId: item.id },
+      });
+    }
+  };
+
+  /**
+   * Handle increasing quantity
+   */
+  const handleIncreaseQty = () => {
+    try {
+      console.log("[CartItem] Increasing quantity for item:", item.id, "Current:", item.quantity);
+      increaseQty(item.id, item.customizations!);
+      console.log("[CartItem] Quantity increased");
+    } catch (error: any) {
+      console.error("[CartItem] Error increasing quantity:", error);
+      Sentry.captureException(error, {
+        tags: { component: "CartItem", action: "handleIncreaseQty" },
+        extra: { itemId: item.id },
+      });
+    }
+  };
+
+  /**
+   * Handle removing item from cart
+   */
+  const handleRemoveItem = () => {
+    try {
+      console.log("[CartItem] Removing item from cart:", item.id);
+      removeItem(item.id, item.customizations!);
+      console.log("[CartItem] Item removed from cart");
+    } catch (error: any) {
+      console.error("[CartItem] Error removing item:", error);
+      Sentry.captureException(error, {
+        tags: { component: "CartItem", action: "handleRemoveItem" },
+        extra: { itemId: item.id },
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
         <View style={styles.imageWrapper}>
           <Image
-            source={{ uri: item.image_url }}
+            source={{ uri: item.image_url || images.placeholder }}
             style={styles.image}
             resizeMode="cover"
+            defaultSource={images.placeholder}
           />
         </View>
 
         <View style={styles.info}>
           <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.price}>R{item.price}</Text>
+          <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
 
           <View style={styles.qtyRow}>
             <TouchableOpacity
-              onPress={() => decreaseQty(item.id, item.customizations!)}
+              onPress={handleDecreaseQty}
               style={styles.qtyBtn}
             >
               <Image
@@ -37,7 +101,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
             <Text style={styles.quantity}>{item.quantity}</Text>
 
             <TouchableOpacity
-              onPress={() => increaseQty(item.id, item.customizations!)}
+              onPress={handleIncreaseQty}
               style={styles.qtyBtn}
             >
               <Image
@@ -52,7 +116,7 @@ const CartItem = ({ item }: { item: CartItemType }) => {
       </View>
 
       <TouchableOpacity
-        onPress={() => removeItem(item.id, item.customizations!)}
+        onPress={handleRemoveItem}
         style={styles.deleteBtn}
       >
         <Image

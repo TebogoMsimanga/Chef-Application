@@ -1,10 +1,24 @@
-import React, { useState } from "react";
+/**
+ * Meal Card Component
+ * 
+ * Displays a menu item card with:
+ * - Item image
+ * - Name, description, price, rating
+ * - Favorite button
+ * - Navigation to item details
+ * 
+ * @component
+ */
+
+import React, { useState, useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
 import { images } from "@/constants";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { addFavorite, removeFavorite } from "@/lib/supabase";
+import * as Sentry from "@sentry/react-native";
+import { addFavorite, removeFavorite, getFavorites } from "@/lib/supabase";
 import useAuthStore from "@/store/auth.store";
+import useFavoritesStore from "@/store/favorite.store";
 
 interface MealCardProps {
   item: any;
@@ -13,31 +27,102 @@ interface MealCardProps {
 
 const MealCard = ({ item, isFavorite = false }: MealCardProps) => {
   const { user } = useAuthStore();
+  const { addFavorite: addToStore, removeFavorite: removeFromStore } = useFavoritesStore();
   const [favorite, setFavorite] = useState(isFavorite);
 
+  // Check if item is favorite on mount
+  useEffect(() => {
+    if (user?.id && item?.id) {
+      checkFavoriteStatus();
+    }
+  }, [user, item]);
+
+  /**
+   * Check if item is in user's favorites
+   */
+  const checkFavoriteStatus = async () => {
+    try {
+      if (!user?.id || !item?.id) return;
+
+      console.log("[MealCard] Checking favorite status for item:", item.id);
+      const favorites = await getFavorites(user.id);
+      const isFav = favorites.some((fav: any) => fav.menu_item_id === item.id || fav.menu_item?.id === item.id);
+      
+      console.log("[MealCard] Favorite status:", isFav);
+      setFavorite(isFav);
+      
+      // Update store
+      if (isFav) {
+        addToStore(item.id);
+      } else {
+        removeFromStore(item.id);
+      }
+    } catch (error: any) {
+      console.error("[MealCard] Error checking favorite status:", error);
+      // Don't show alert for check errors
+    }
+  };
+
+  /**
+   * Toggle favorite status
+   * Adds or removes item from favorites in Supabase
+   */
   const toggleFavorite = async () => {
     if (!user?.id) {
+      console.warn("[MealCard] User not authenticated, cannot add favorite");
       Alert.alert("Error", "Please login to add favorites");
       return;
     }
 
     try {
+      console.log("[MealCard] Toggling favorite for item:", item.id, "Current:", favorite);
+
       if (favorite) {
+        console.log("[MealCard] Removing favorite...");
         await removeFavorite(user.id, item.id);
         setFavorite(false);
+        removeFromStore(item.id);
+        console.log("[MealCard] Favorite removed successfully");
       } else {
+        console.log("[MealCard] Adding favorite...");
         await addFavorite(user.id, item.id);
         setFavorite(true);
+        addToStore(item.id);
+        console.log("[MealCard] Favorite added successfully");
       }
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      console.error("[MealCard] Error toggling favorite:", error);
+      
+      // Log to Sentry
+      Sentry.captureException(error, {
+        tags: { component: "MealCard", action: "toggleFavorite" },
+        extra: { itemId: item.id, userId: user.id, errorMessage: error?.message },
+      });
+
+      Alert.alert("Error", error.message || "Failed to update favorite. Please try again.");
+    }
+  };
+
+  /**
+   * Handle navigation to item details
+   */
+  const handlePress = () => {
+    try {
+      console.log("[MealCard] Navigating to item details:", item.id);
+      router.push(`/MenuItemDetail?id=${item.id}`);
+    } catch (error: any) {
+      console.error("[MealCard] Error navigating:", error);
+      Sentry.captureException(error, {
+        tags: { component: "MealCard", action: "handlePress" },
+        extra: { itemId: item.id },
+      });
     }
   };
 
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => router.push(`/MenuItemDetail?id=${item.id}`)}
+      onPress={handlePress}
     >
       <Image
         source={{ uri: item.image || images.placeholder }}

@@ -1,15 +1,29 @@
+/**
+ * Cart Screen
+ * 
+ * Displays shopping cart with all items, quantities, and totals.
+ * Shows payment summary and allows navigation to checkout.
+ * 
+ * @component
+ */
+
 import {FlatList, Image, StyleSheet, Text, View} from "react-native";
-import React from "react";
+import React, {useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useCartStore} from "@/store/cart.store";
 import CustomHeader from "@/components/CustomHeader";
 import {PaymentInfoProps} from "@/type";
 import CustomButton from "@/components/CustomButton";
 import CartItem from "@/components/CartItem";
+import * as Sentry from "@sentry/react-native";
 import {StatusBar} from "expo-status-bar";
 import {images} from "@/constants";
 import {router} from "expo-router";
 
+/**
+ * Payment Info Component
+ * Displays a label-value pair for payment summary
+ */
 const PaymentInfo = ({ label, value }: PaymentInfoProps) => (
   <View style={styles.row}>
     <Text style={styles.label}>{label}</Text>
@@ -22,6 +36,38 @@ export default function Cart() {
 
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
+
+  console.log("[Cart] Screen rendered with items:", items.length);
+
+  // Log cart state changes
+  useEffect(() => {
+    console.log("[Cart] Cart updated:", {
+      items: items.length,
+      totalItems,
+      totalPrice: totalPrice.toFixed(2),
+    });
+  }, [items, totalItems, totalPrice]);
+
+  /**
+   * Handle navigation to checkout
+   */
+  const handleCheckout = () => {
+    try {
+      console.log("[Cart] Navigating to checkout with", totalItems, "items");
+      
+      if (totalItems === 0) {
+        console.warn("[Cart] Cannot checkout with empty cart");
+        return;
+      }
+
+      router.push("/checkout");
+    } catch (error: any) {
+      console.error("[Cart] Error navigating to checkout:", error);
+      Sentry.captureException(error, {
+        tags: { component: "Cart", action: "handleCheckout" },
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={{ backgroundColor: "#fff", height: "100%" }}>
@@ -128,7 +174,7 @@ export default function Cart() {
               <CustomButton
                 title="Proceed to Checkout"
                 style={{ backgroundColor: "#FE8C00" }}
-                onPress={() => router.push("/checkout")}
+                onPress={handleCheckout}
               />
             </View>
           )

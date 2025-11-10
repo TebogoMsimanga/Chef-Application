@@ -1,14 +1,72 @@
-import React from "react";
+/**
+ * Favorite Button Component
+ * 
+ * Displays a button with favorite icon and badge count.
+ * Navigates to favorites screen when pressed.
+ * 
+ * @component
+ */
+
+import React, { useEffect, useState } from "react";
 import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {router} from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import {useFavoritesStore} from "@/store/favorite.store";
+import {getFavorites} from "@/lib/supabase";
+import useAuthStore from "@/store/auth.store";
 import {Ionicons} from "@expo/vector-icons";
 
 const FavButton = () => {
-  const totalFavorites = useFavoritesStore((state) => state.getTotalFavorites());
+  const { user } = useAuthStore();
+  const { getTotalFavorites } = useFavoritesStore();
+  const [totalFavorites, setTotalFavorites] = useState(0);
+
+  // Load favorites count from Supabase
+  useEffect(() => {
+    if (user?.id) {
+      loadFavoritesCount();
+    }
+  }, [user]);
+
+  /**
+   * Load favorites count from Supabase
+   */
+  const loadFavoritesCount = async () => {
+    try {
+      if (!user?.id) return;
+
+      console.log("[FavButton] Loading favorites count for user:", user.id);
+      const favorites = await getFavorites(user.id);
+      const count = favorites?.length || 0;
+      
+      console.log("[FavButton] Favorites count:", count);
+      setTotalFavorites(count);
+    } catch (error: any) {
+      console.error("[FavButton] Error loading favorites count:", error);
+      Sentry.captureException(error, {
+        tags: { component: "FavButton", action: "loadFavoritesCount" },
+        extra: { userId: user?.id, errorMessage: error?.message },
+      });
+    }
+  };
+
+  /**
+   * Handle navigation to favorites screen
+   */
+  const handlePress = () => {
+    try {
+      console.log("[FavButton] Navigating to favorites screen");
+      router.push("/favorite");
+    } catch (error: any) {
+      console.error("[FavButton] Error navigating:", error);
+      Sentry.captureException(error, {
+        tags: { component: "FavButton", action: "handlePress" },
+      });
+    }
+  };
 
   return (
-    <TouchableOpacity style={styles.cartButton} onPress={() => router.push("/favorite")}>  
+    <TouchableOpacity style={styles.cartButton} onPress={handlePress}>  
       <Ionicons 
           name={"heart"} 
           size={24} 

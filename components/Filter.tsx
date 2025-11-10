@@ -1,11 +1,7 @@
 import {FlatList, StyleSheet, Text, TouchableOpacity,} from "react-native";
 import React, {useState} from "react";
 import {router, useLocalSearchParams} from "expo-router";
-
-interface Category {
-  id: string;
-  name: string;
-}
+import { Category } from "@/type";
 
 const Filter = ({ categories }: { categories: Category[] }) => {
   const searchParams = useLocalSearchParams();
@@ -26,13 +22,13 @@ const Filter = ({ categories }: { categories: Category[] }) => {
   return (
     <FlatList
       data={filterData}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(file) => file.id}
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
       renderItem={({ item }) => (
         <TouchableOpacity
-          key={item.id}
+
           style={[
             styles.filter,
             active === item.id ? styles.active : styles.notActive,
