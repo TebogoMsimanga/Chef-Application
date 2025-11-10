@@ -16,7 +16,7 @@ import * as Sentry from "@sentry/react-native";
 import {useFonts} from "expo-font";
 import {SplashScreen, Stack} from "expo-router";
 import {useEffect, useState} from "react";
-import {View, ActivityIndicator, StyleSheet} from "react-native";
+import {View, ActivityIndicator, StyleSheet, Image} from "react-native";
 
 // Initialize Sentry for error tracking and monitoring
 // This should be initialized as early as possible in the app lifecycle
@@ -113,8 +113,12 @@ export default Sentry.wrap(function RootLayout() {
   if (!fontsLoaded || isLoading || !appReady) {
     console.log("[RootLayout] App loading - fonts:", fontsLoaded, "auth:", isLoading, "ready:", appReady);
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FE8C00" />
+      <View style={styles.splashContainer}>
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
       </View>
     );
   }
@@ -134,10 +138,14 @@ export default Sentry.wrap(function RootLayout() {
 });
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  splashContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#FE8C00",
+  },
+  splashLogo: {
+    width: 200,
+    height: 200,
   },
 });
