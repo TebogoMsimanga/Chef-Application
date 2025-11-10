@@ -1,17 +1,27 @@
 import AddButton from "@/components/AddButton";
-import {images, menu} from "@/constants";
-import {getCategories, getMenu} from "@/lib/supabase";
+import { images, menu } from "@/constants";
+import { getCategories, getMenu } from "@/lib/supabase";
 import useAppwrite from "@/lib/useAppwrite";
 import useAuthStore from "@/store/auth.store";
-import {router} from "expo-router";
-import {StatusBar} from "expo-status-bar";
-import React, {useEffect, useState} from "react";
-import {FlatList, Image, Pressable, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const { user } = useAuthStore();
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
+    {}
+  );
 
   // Fetch all menus using useAppwrite (no category, high limit to get everything)
   const {
@@ -81,8 +91,12 @@ export default function Index() {
                 ]}
                 android_ripple={{ color: "rgba(255, 255, 255, 0.13)" }}
                 onPress={() => {
-                  const categoryId = (Index as any).categoryNameToIdMap[item.title];
-                  router.push(`/(screens)/CategoryMeals?category=${item.title}&categoryId=${categoryId}`);
+                  const categoryId = (Index as any).categoryNameToIdMap[
+                    item.title
+                  ];
+                  router.push(
+                    `/(screens)/CategoryMeals?category=${item.title}&categoryId=${categoryId}`
+                  );
                 }}
               >
                 <View style={{ width: "50%", height: "100%" }}>
@@ -99,24 +113,30 @@ export default function Index() {
                   ]}
                 >
                   <Text style={styles.homeText}>{item.title}</Text>
-                  
+
                   {/* Meal Count - Dynamic from DB */}
-                  <View style={[isEven ? styles.left : styles.right,]}>
-                    <Text style={{
-                      color: "#fff"
-                    }}>
+                  <View style={[isEven ? styles.left : styles.right]}>
+                    <Text
+                      style={{
+                        color: "#fff",
+                      }}
+                    >
                       Meal Counter:
                     </Text>
-                  <Text style={{
-                    backgroundColor: "#FE8C00",
-                    paddingHorizontal: 10,
-                    paddingVertical: 10,
-                    fontSize: 18,
-                    fontWeight: "bold",
-                    borderRadius: 9999,
-                    marginTop: 5,
-                    color: "#fff"
-                  }}>{categoryCounts[item.title] || 0} Meals</Text>
+                    <Text
+                      style={{
+                        backgroundColor: "#FE8C00",
+                        paddingHorizontal: 10,
+                        paddingVertical: 10,
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        borderRadius: 9999,
+                        marginTop: 5,
+                        color: "#fff",
+                      }}
+                    >
+                      {categoryCounts[item.title] || 0} Meals
+                    </Text>
                   </View>
                 </View>
               </Pressable>
@@ -164,7 +184,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 45,
     height: 45,
-    borderRadius: 9999
+    borderRadius: 9999,
   },
   userInfoTextContainer: {
     flexDirection: "column",
