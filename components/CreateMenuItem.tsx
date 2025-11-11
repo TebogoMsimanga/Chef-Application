@@ -289,9 +289,24 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
       };
 
       console.log("[CreateMenuItem] Creating menu item:", menuItem.name);
-      await createMenuItem(menuItem);
+      const createdItem = await createMenuItem(menuItem);
 
       console.log("[CreateMenuItem] Menu item created successfully");
+      
+      // Add the newly created item to the menuItems array immediately
+      if (createdItem) {
+        setMenuItems((prevItems) => {
+          // Check if item already exists (avoid duplicates)
+          const exists = prevItems.some((item) => item.id === createdItem.id);
+          if (exists) {
+            return prevItems;
+          }
+          // Add new item to the beginning of the array
+          return [createdItem, ...prevItems];
+        });
+        console.log("[CreateMenuItem] Menu item added to array");
+      }
+
       Alert.alert("Success", "Menu item created successfully!");
 
       // Reset form
@@ -307,7 +322,7 @@ const CreateMenuItem = ({ onSuccess }: CreateMenuItemProps) => {
       });
       setImageUri("");
 
-      // Reload menu items
+      // Reload menu items to ensure consistency and get full category data
       await loadMenuItems();
 
       // Switch to list tab

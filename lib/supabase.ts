@@ -439,7 +439,10 @@ export async function createMenuItem(item: any) {
     const { data, error } = await getSupabase()
       .from('menu_items')
       .insert(item)
-      .select()
+      .select(`
+        *,
+        category:categories(id, name)
+      `)
       .single();
     
     if (error) {
