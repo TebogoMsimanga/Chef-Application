@@ -1,4 +1,4 @@
-# Chef Application - React Native Food Ordering App
+# Chef Application - React Native chef menu App
 
 A comprehensive React Native application built with Expo Router for food ordering, built with Supabase for backend services and Sentry for error tracking.
 
@@ -15,7 +15,7 @@ A comprehensive React Native application built with Expo Router for food orderin
 
 ## 🎯 Project Overview
 
-This is a full-featured food ordering application that allows users to:
+This is a full-featured chef menu application that allows users to:
 - Browse menu items by category
 - Search and filter menu items
 - Add items to cart with customizations
@@ -294,19 +294,5 @@ Chef-Application/
 - [Zustand Documentation](https://zustand-demo.pmnd.rs/)
 - [Sentry React Native](https://docs.sentry.io/platforms/react-native/)
 
-## 👥 Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Test thoroughly
-4. Update this README if needed
-5. Submit a pull request
 
-## 📄 License
-
-[Add your license here]
-
----
-
-**Last Updated**: [Current Date]
-**Version**: 1.0.0
